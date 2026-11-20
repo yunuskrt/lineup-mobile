@@ -1,0 +1,11 @@
+node_modules
+.expo
+dist
+ios
+android
+package-lock.json
+
+# Project docs are maintained by hand, not formatted
+context
+.claude
+*.md

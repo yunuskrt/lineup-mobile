@@ -1,4 +1,53 @@
 {
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Edit(/.claude/skills/todo/**)",
+      "Edit(/.claude/skills/feature/**)"
+    ],
+    "deny": [
+      "Edit(../lineup-web/**)",
+      "Write(../lineup-web/**)",
+      "Edit(../lineup-backend/**)",
+      "Write(../lineup-backend/**)"
+    ],
+    "additionalDirectories": [
+      "../lineup-web",
+      "../lineup-backend"
+    ]
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude senden onay bekliyor!\" with title \"Claude Code\" sound name \"Glass\"'"
+          }
+        ]
+      },
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude yanıtını tamamladı, senden talimat bekliyor.\" with title \"Claude Code\" sound name \"Glass\"'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Glass.aiff"
+          }
+        ]
+      }
+    ]
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   }
