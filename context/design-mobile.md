@@ -120,7 +120,7 @@ Uppercase is for stickers and section labels only. If Turkish capitals (İ Ş Ğ
 
 - **Shadows, static surfaces:** React Native's `boxShadow` (New Architecture only, which Expo SDK 58 is) with offset 4/4, blur 0, ink. Its outset shadows need **Android 9+**. M03 checked the direction: 4/4 lands down and to the right on both platforms. It's `SHADOW_HARD` and `SHADOW_HARD_SM` in `src/styles/shadow.ts`.
 - **Shadows, pressables:** two layers. A fixed ink plate sits under the face, and the face moves onto it. The press is then a pure transform that Reanimated runs on the UI thread, and it works on every Android version.
-- **Fallback:** below Android 9, static surfaces use the plate too. Whether to support those versions at all is the user's call (open question 2).
+- **Fallback:** below Android 9, static surfaces use the plate too (`ShadowBox`). Android 7 and 8 stay supported (user, 2026-11-21).
 - **Archivo** ships as **static files in `assets/fonts/`**, one per width and weight, because React Native can't vary a font's width:
   - `ArchivoSemiExpanded-ExtraBold.ttf`: titles, sections, card titles, stickers, the room code (`font-display`);
   - `ArchivoExpanded-Black.ttf`: numbers and the wordmark (`font-display-black`);
@@ -247,5 +247,5 @@ PROFILE (tab)                        ARCHIVE (tab)
 ## Open questions (the user decides)
 
 1. **Keyboard on the opponent's turn.** Recommended: dismiss it, so the full board shows their reveals, and raise it on your turn. The other option keeps it up to save the raise time; M10 measures that time on both platforms.
-2. **Android below 9.** Recommended: support it, using the plate fallback. The other option raises the minimum Android version so static shadows can always use `boxShadow`.
+2. ~~Android below 9.~~ Settled in M04a: supported, with the plate fallback (user, 2026-11-21).
 3. ~~Plain zeros, if the slashed zero can't be switched on.~~ Settled in M03: plain zeros (user, 2026-11-21).

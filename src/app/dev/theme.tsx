@@ -1,7 +1,7 @@
-import React, { type ReactNode } from 'react';
+import React from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
+import { DevScreen, DevSection } from '@/components/dev/DevSection';
 import {
   SECTION_LABEL,
   TABULAR_NUMS,
@@ -51,24 +51,6 @@ const RADIUS_CLASSES = [
   'rounded-full',
 ];
 
-type SectionProps = {
-  id: string;
-  title: string;
-  // ?section= shows one section alone, so each can be screenshotted
-  only?: string;
-  children: ReactNode;
-};
-
-const Section = ({ id, title, only, children }: SectionProps) => {
-  if (only && only !== id) return null;
-  return (
-    <View className="gap-4 border-t-2 border-line pt-6">
-      <Text className={`${TYPE_SECTION} text-fg`}>{title}</Text>
-      {children}
-    </View>
-  );
-};
-
 type SwatchProps = { name: string; hex: string };
 
 const Swatch = ({ name, hex }: SwatchProps) => {
@@ -92,106 +74,102 @@ type Props = {};
 const ThemeScreen = ({}: Props) => {
   const { section } = useLocalSearchParams<{ section?: string }>();
   return (
-    <SafeAreaView className="flex-1 bg-surface">
-      <ScrollView contentContainerClassName="gap-8 px-4 pb-16 pt-4">
-        <Text className={`${TYPE_TITLE} text-fg`}>Theme</Text>
+    <DevScreen title="Theme">
+      <DevSection id="primitives" title="Primitives" only={section}>
+        {Object.entries(PALETTE).map(([name, hex]) => (
+          <Swatch key={name} name={name} hex={hex} />
+        ))}
+      </DevSection>
 
-        <Section id="primitives" title="Primitives" only={section}>
-          {Object.entries(PALETTE).map(([name, hex]) => (
-            <Swatch key={name} name={name} hex={hex} />
-          ))}
-        </Section>
+      <DevSection id="roles" title="Roles" only={section}>
+        {Object.entries(ROLES).map(([name, hex]) => (
+          <Swatch key={name} name={name} hex={hex} />
+        ))}
+      </DevSection>
 
-        <Section id="roles" title="Roles" only={section}>
-          {Object.entries(ROLES).map(([name, hex]) => (
-            <Swatch key={name} name={name} hex={hex} />
-          ))}
-        </Section>
-
-        <Section id="type-roles" title="Type roles" only={section}>
-          {TYPE_ROLES.map((role) => (
-            <View key={role.name} className="gap-1">
-              <Text className={SECTION_LABEL}>{role.name}</Text>
-              <Text className={`${role.className} text-fg`}>{role.sample}</Text>
-            </View>
-          ))}
-          <View className="gap-1">
-            <Text className={SECTION_LABEL}>TYPE_NUMBER</Text>
-            {/* Archivo's tnum through fontVariant, NativeWind can't */}
-            <Text
-              className={`${TYPE_NUMBER} text-64 text-fg`}
-              style={TABULAR_NUMS}
-            >
-              07 10 15
-            </Text>
+      <DevSection id="type-roles" title="Type roles" only={section}>
+        {TYPE_ROLES.map((role) => (
+          <View key={role.name} className="gap-1">
+            <Text className={SECTION_LABEL}>{role.name}</Text>
+            <Text className={`${role.className} text-fg`}>{role.sample}</Text>
           </View>
-        </Section>
-
-        <Section id="shadow" title="Outline and shadow" only={section}>
-          {/* boxShadow: NativeWind can't express a hard shadow */}
-          <View
-            className="rounded-md border-2 border-line bg-surface-card p-4"
-            style={SHADOW_HARD}
+        ))}
+        <View className="gap-1">
+          <Text className={SECTION_LABEL}>TYPE_NUMBER</Text>
+          {/* Archivo's tnum through fontVariant, NativeWind can't */}
+          <Text
+            className={`${TYPE_NUMBER} text-64 text-fg`}
+            style={TABULAR_NUMS}
           >
-            <Text className="font-body-semibold text-14 text-fg">
-              shadow-hard · 4/4
+            07 10 15
+          </Text>
+        </View>
+      </DevSection>
+
+      <DevSection id="shadow" title="Outline and shadow" only={section}>
+        {/* boxShadow: NativeWind can't express a hard shadow */}
+        <View
+          className="rounded-md border-2 border-line bg-surface-card p-4"
+          style={SHADOW_HARD}
+        >
+          <Text className="font-body-semibold text-14 text-fg">
+            shadow-hard · 4/4
+          </Text>
+        </View>
+        {/* boxShadow: NativeWind can't express a hard shadow */}
+        <View
+          className="rounded-md border-2 border-line bg-block-butter p-4"
+          style={SHADOW_HARD_SM}
+        >
+          <Text className="font-body-semibold text-14 text-fg">
+            shadow-hard-sm · 2/2
+          </Text>
+        </View>
+      </DevSection>
+
+      <DevSection id="type" title="Type" only={section}>
+        {Object.entries(FACE_CLASSES).map(([name, className]) => (
+          <View key={name} className="gap-1">
+            <Text className={SECTION_LABEL}>
+              {name} · {FONT_FAMILIES[name as keyof typeof FONT_FAMILIES]}
+            </Text>
+            <Text className={`${className} text-20 text-fg`}>
+              Know the XI 0123456789 İŞĞ
             </Text>
           </View>
-          {/* boxShadow: NativeWind can't express a hard shadow */}
-          <View
-            className="rounded-md border-2 border-line bg-block-butter p-4"
-            style={SHADOW_HARD_SM}
-          >
-            <Text className="font-body-semibold text-14 text-fg">
-              shadow-hard-sm · 2/2
+        ))}
+      </DevSection>
+
+      <DevSection id="spacing" title="Spacing" only={section}>
+        {SPACING_STEPS.map((step) => (
+          <View key={step} className="flex-row items-center gap-3">
+            <Text className="w-16 font-body text-12 text-fg-muted">
+              {step} · {step * SPACING_UNIT}pt
             </Text>
+            {/* A value known only at run time: the step being shown */}
+            <View
+              className="h-4 border-2 border-line bg-brand"
+              style={{ width: step * SPACING_UNIT }}
+            />
           </View>
-        </Section>
+        ))}
+      </DevSection>
 
-        <Section id="type" title="Type" only={section}>
-          {Object.entries(FACE_CLASSES).map(([name, className]) => (
-            <View key={name} className="gap-1">
-              <Text className={SECTION_LABEL}>
-                {name} · {FONT_FAMILIES[name as keyof typeof FONT_FAMILIES]}
-              </Text>
-              <Text className={`${className} text-20 text-fg`}>
-                Know the XI 0123456789 İŞĞ
-              </Text>
-            </View>
-          ))}
-        </Section>
-
-        <Section id="spacing" title="Spacing" only={section}>
-          {SPACING_STEPS.map((step) => (
-            <View key={step} className="flex-row items-center gap-3">
-              <Text className="w-16 font-body text-12 text-fg-muted">
-                {step} · {step * SPACING_UNIT}pt
-              </Text>
-              {/* A value known only at run time: the step being shown */}
+      <DevSection id="radius" title="Radius" only={section}>
+        <View className="flex-row gap-4">
+          {RADIUS_CLASSES.map((className) => (
+            <View key={className} className="items-center gap-2">
               <View
-                className="h-4 border-2 border-line bg-brand"
-                style={{ width: step * SPACING_UNIT }}
+                className={`h-14 w-14 border-2 border-line bg-block-mint ${className}`}
               />
+              <Text className="font-body text-12 text-fg-muted">
+                {className}
+              </Text>
             </View>
           ))}
-        </Section>
-
-        <Section id="radius" title="Radius" only={section}>
-          <View className="flex-row gap-4">
-            {RADIUS_CLASSES.map((className) => (
-              <View key={className} className="items-center gap-2">
-                <View
-                  className={`h-14 w-14 border-2 border-line bg-block-mint ${className}`}
-                />
-                <Text className="font-body text-12 text-fg-muted">
-                  {className}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </Section>
-      </ScrollView>
-    </SafeAreaView>
+        </View>
+      </DevSection>
+    </DevScreen>
   );
 };
 
