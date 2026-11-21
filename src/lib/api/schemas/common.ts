@@ -1,0 +1,61 @@
+import { z } from 'zod';
+
+export const FIRST_SEASON_START = 2000;
+export const LAST_SEASON_START = 2025;
+export const SQUAD_SIZE = 11;
+
+// Client copy of the server's 15 s round: the ring, cues and duel cap
+export const ROUND_MS = 15_000;
+
+export const idSchema = z.string().min(1);
+
+// Opaque, never a player id: ids sort by teammate
+export const directoryKeySchema = z.string().regex(/^[A-Za-z0-9_-]{22}$/);
+
+export const ratioSchema = z.number().min(0).max(1);
+
+export const squadCountSchema = z.number().int().min(0).max(SQUAD_SIZE);
+
+export const MAX_GUESS_LENGTH = 64;
+
+export const guessTextSchema = z.string().trim().min(1).max(MAX_GUESS_LENGTH);
+
+const webUrlSchema = z.url({ protocol: /^https?$/ });
+
+// One leading slash only: `//host` is off-site
+const rootPathSchema = z.string().regex(/^\/(?!\/)[^\s?#]+$/);
+
+// Root-relative paths serve the mock's own assets
+export const imageUrlSchema = z.union([webUrlSchema, rootPathSchema]);
+
+export const sideSchema = z.enum(['home', 'away']);
+
+export const competitionKindSchema = z.enum([
+  'league',
+  'ucl',
+  'uel',
+  'world_cup',
+  'euro',
+]);
+
+export const seasonStartSchema = z
+  .number()
+  .int()
+  .min(FIRST_SEASON_START)
+  .max(LAST_SEASON_START);
+
+export const eraRangeSchema = z
+  .object({
+    from: seasonStartSchema,
+    to: seasonStartSchema,
+  })
+  .refine((era) => era.from <= era.to, {
+    error: 'Era start must not be after its end',
+    path: ['to'],
+  });
+
+export const filtersSchema = z.object({
+  competitionIds: z.array(idSchema),
+  clubIds: z.array(idSchema),
+  era: eraRangeSchema,
+});
