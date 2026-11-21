@@ -16,7 +16,7 @@ The test for every screen: **it should feel made for a phone, not like the websi
 
 ## 2. Tokens
 
-Every web token and role keeps its web name. Hex values come from `src/styles/tokens.css` and `theme.css`. The four mixed roles were worked out from their OKLCH `color-mix()`. M03 confirms them once against a browser.
+Every web token and role keeps its web name. Hex values come from `src/styles/tokens.css` and `theme.css`. The four mixed roles were worked out from their OKLCH `color-mix()`, and M03 confirmed them against `culori`, a CSS Color 4 implementation (`gate-scrim` with premultiplied alpha, as CSS mixes).
 
 ### Palette
 
@@ -118,17 +118,17 @@ Uppercase is for stickers and section labels only. If Turkish capitals (İ Ş Ğ
 
 ## 5. Drawing it
 
-- **Shadows, static surfaces:** React Native's `boxShadow` (New Architecture only, which Expo SDK 58 is) with offset 4/4, blur 0, ink. Its outset shadows need **Android 9+**. M03 checks the direction on a real device, because the docs describe the y offset ambiguously.
+- **Shadows, static surfaces:** React Native's `boxShadow` (New Architecture only, which Expo SDK 58 is) with offset 4/4, blur 0, ink. Its outset shadows need **Android 9+**. M03 checked the direction: 4/4 lands down and to the right on both platforms. It's `SHADOW_HARD` and `SHADOW_HARD_SM` in `src/styles/shadow.ts`.
 - **Shadows, pressables:** two layers. A fixed ink plate sits under the face, and the face moves onto it. The press is then a pure transform that Reanimated runs on the UI thread, and it works on every Android version.
 - **Fallback:** below Android 9, static surfaces use the plate too. Whether to support those versions at all is the user's call (open question 2).
 - **Archivo** ships as **static files in `assets/fonts/`**, one per width and weight, because React Native can't vary a font's width:
-  - `Archivo_SemiExpanded-ExtraBold.ttf`: titles, sections, card titles, stickers, the room code;
-  - `Archivo_Expanded-Black.ttf`: numbers and the wordmark;
-  - `Archivo-Bold.ttf`: long titles;
-  - `Archivo_Expanded-ExtraBold.ttf`: unused at phone sizes, so M03 can drop it.
-- **Embedding:** the files are embedded at build time with the `expo-font` config plugin, so there's no flash and no loading gate. Each file is renamed to its **PostScript name**, so one family name works on both platforms: Android names a family after the file, iOS after the font itself. An Archivo family is one face; never set `fontWeight` on it. `OFL.txt` ships beside them.
-- **Inter** comes from its Expo Google Fonts package, weights 400, 500 and 600 only.
-- **Slashed zero** (the web's `zero` feature) has no React Native style switch. M03 checks it; without it, the clock and the score use plain zeros.
+  - `ArchivoSemiExpanded-ExtraBold.ttf`: titles, sections, card titles, stickers, the room code (`font-display`);
+  - `ArchivoExpanded-Black.ttf`: numbers and the wordmark (`font-display-black`);
+  - `Archivo-Bold.ttf`: long titles (`font-display-bold`).
+  - The Expanded ExtraBold file was dropped in M03: nothing uses it at phone sizes.
+- **Embedding:** the files are embedded at build time with the `expo-font` config plugin, so there's no flash and no loading gate. Each file is named after its **PostScript name**, so one family name works on both platforms: Android names a family after the file, iOS after the font itself. A family is one face; never set `fontWeight` on it. The licences ship beside them (`OFL-Archivo.txt`, `OFL-Inter.txt`).
+- **Inter** comes from its Expo Google Fonts package, weights 400, 500 and 600 only, as `Inter-Regular`, `Inter-Medium` and `Inter-SemiBold` (`font-body`, `font-body-medium`, `font-body-semibold`). The name `sans` is taken: NativeWind's preset claims it for the system font, and a test guards against reusing any name it claims.
+- **Slashed zero:** not available. Archivo has the `zero` feature but no stylistic set React Native's `fontVariant` can reach, so the clock and the score use plain zeros (user, 2026-11-21). `tabular-nums` does work, through `fontVariant` (`TABULAR_NUMS` in `src/styles/classes.ts`).
 - **Pitch and clock** are drawn with `react-native-svg`, as Lucide already needs it.
 
 ## 6. Screens
@@ -248,4 +248,4 @@ PROFILE (tab)                        ARCHIVE (tab)
 
 1. **Keyboard on the opponent's turn.** Recommended: dismiss it, so the full board shows their reveals, and raise it on your turn. The other option keeps it up to save the raise time; M10 measures that time on both platforms.
 2. **Android below 9.** Recommended: support it, using the plate fallback. The other option raises the minimum Android version so static shadows can always use `boxShadow`.
-3. **Plain zeros**, if the slashed zero can't be switched on.
+3. ~~Plain zeros, if the slashed zero can't be switched on.~~ Settled in M03: plain zeros (user, 2026-11-21).

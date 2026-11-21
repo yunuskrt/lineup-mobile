@@ -22,7 +22,7 @@ This todo file is for developer-side use.
 
 - [x] **Phase M01 — Repo & Scaffold**: Expo Router on a dev build, strict TS, lint and prettier, `@/` alias, portrait, `lineup://` scheme.
 - [x] **Phase M02 — Core Carry-over**: Copied schemas, types and pure helpers compile, Vitest green, component types moved to `types/`. (copy list A)
-- [ ] **Phase M03 — Theme & Fonts**: NativeWind theme from the web tokens and roles, Archivo widths and Inter, hard offset shadows, `/dev/theme`.
+- [x] **Phase M03 — Theme & Fonts**: NativeWind theme from the web tokens and roles, Archivo widths and Inter, hard offset shadows, `/dev/theme`.
 - [ ] **Phase M04 — Native Kit**: Buttons, tiles, stickers, input, select sheet, checkbox, alert, empty, avatar, skeleton, dialog, toast; `/dev/kit`.
 - [ ] **Phase M05 — App Shell & Navigation**: Root stack, sticker tab bar (Play, Archive, Profile), full-screen game stack, safe areas, splash, 404.
 - [ ] **Phase M06 — API Client & Session**: Real transport, bearer token in SecureStore, env URL, Query on AppState and NetInfo, 401 sign-out. (copy list B)
