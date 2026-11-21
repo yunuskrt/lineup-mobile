@@ -4,7 +4,8 @@
       "WebSearch",
       "Edit(/.claude/skills/todo/**)",
       "Edit(/.claude/skills/feature/**)",
-      "WebFetch(domain:docs.expo.dev)"
+      "WebFetch(domain:docs.expo.dev)",
+      "WebFetch(domain:www.nativewind.dev)"
     ],
     "deny": [
       "Edit(../lineup-web/**)",
