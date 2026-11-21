@@ -1,0 +1,1310 @@
+import { ROUND_MS, SQUAD_SIZE } from '@/lib/api/schemas/common';
+import { MAX_LIVES } from '@/lib/api/schemas/game';
+import {
+  SAMPLE_FILTER_OPTIONS,
+  SAMPLE_FILTERS,
+  SAMPLE_IDENTITY,
+  SAMPLE_MATCH,
+  SAMPLE_OPEN_FILTERS,
+  SAMPLE_OPPONENT,
+  SAMPLE_YOU,
+  sampleAllowance,
+  samplePlayer,
+} from '@/lib/dev/samples';
+import { duelCanvasView, INITIAL_DUEL_SESSION } from '@/lib/duel-session';
+import { FEEDBACK_MESSAGES } from '@/lib/feedback';
+import { filterSummary, lobbyGate } from '@/lib/lobby';
+import { capLine } from '@/lib/solo-allowance';
+import {
+  dailyCapGate,
+  INITIAL_SOLO_RUN,
+  SOLO_GATE_COPY,
+  soloCanvasView,
+  soloRunReducer,
+} from '@/lib/solo-run';
+import { emptyPoolGate, reconnectingGate } from '@/lib/system-states';
+import type { ApiError, EmptyPoolReason } from '@/types/api';
+import type {
+  CanvasGateView,
+  CanvasMode,
+  CanvasView,
+  CanvasViewBase,
+  DuelCanvasView,
+  DuelEndReason,
+  SoloCanvasView,
+  SoloEndView,
+} from '@/types/canvas';
+import type {
+  DuelActor,
+  DuelNamedPlayer,
+  DuelResult,
+  FilterSubmission,
+} from '@/types/duel';
+import type { DuelLobbyView } from '@/types/duel-lobby';
+import type { DuelSessionState } from '@/types/duel-session';
+import type { Lives, RoundTiming } from '@/types/game';
+import type { MatchIdentity } from '@/types/match';
+import type { FoundPlayer, NamedPlayer, RevealedPlayer } from '@/types/player';
+import type { ProAccess } from '@/types/pro';
+import type { SoloSession, SoloSummary } from '@/types/solo';
+import type { SoloRunEvent } from '@/types/solo-run';
+
+export const SNAPSHOT_EVENT_DELAY_MS = 600;
+
+export const DEFAULT_CANVAS_STATE = 'loading';
+
+// The state the gate's action moves on to
+export const AFTER_GATE_STATE = 'idle';
+
+export type CanvasFrame<V extends CanvasView = CanvasView> = {
+  view: V;
+  guess: string;
+};
+
+export type CanvasSnapshot<V extends CanvasView = CanvasView> = {
+  frame: CanvasFrame<V>;
+  next?: CanvasFrame<V>;
+};
+
+export type CanvasState<V extends CanvasView = CanvasView> = {
+  description: string;
+  build: (now: number) => CanvasSnapshot<V>;
+};
+
+type BaseFrame = { fields: CanvasViewBase; guess: string };
+
+type BaseSnapshot = { frame: BaseFrame; next?: BaseFrame };
+
+type SharedState = {
+  description: string;
+  build: (now: number, found: FoundPlayer[]) => BaseSnapshot;
+};
+
+const FORMATION = SAMPLE_MATCH.formation;
+
+const REVEAL_SLOT = 2;
+const THEIR_REVEAL_SLOT = 5;
+const PULSED_SLOT = 0;
+
+const SOLO_LIVES: Lives = 2;
+
+const PENDING_GUESS = "Ciaran O'Donovan";
+const ALREADY_FOUND_GUESS = 'Pennock';
+const MISS_GUESS = 'Marco Bellandi';
+// Matches Rhys Harlow, already named at slot 4
+const SUGGESTING_GUESS = 'har';
+
+const PRE_MATCH_GATE: CanvasGateView = {
+  title: 'Match ready',
+  detail: 'Name all eleven starters. Your clock starts when you press Start.',
+  actionLabel: 'Start',
+};
+
+// Two-line names, to check the clamp at 360px
+const LONG_NAMES_IDENTITY: MatchIdentity = {
+  ...SAMPLE_IDENTITY,
+  home: {
+    ...SAMPLE_IDENTITY.home,
+    name: 'Borussia Mönchengladbach',
+    shortName: 'BMG',
+  },
+  away: {
+    ...SAMPLE_IDENTITY.away,
+    name: 'Wolverhampton Wanderers',
+    shortName: 'WOL',
+    crestUrl: null,
+  },
+};
+
+const SOLO_FOUND_SLOTS = [0, 4, 7, 10];
+const QUIT_FOUND_SLOTS = [0, 2, 4, 7, 9, 10];
+const ALL_SLOTS = Array.from({ length: SQUAD_SIZE }, (_, slot) => slot);
+
+const SOLO_FOUND = playersAt(SOLO_FOUND_SLOTS);
+
+const DUEL_FINDERS: [number, DuelActor][] = [
+  [0, 'you'],
+  [4, 'opponent'],
+  [7, 'you'],
+  [10, 'opponent'],
+];
+
+const DUEL_FOUND = DUEL_FINDERS.map(([slot, foundBy]) =>
+  revealed(slot, foundBy),
+);
+
+function playersAt(slots: number[]): RevealedPlayer[] {
+  return slots.map((slot) => samplePlayer(FORMATION, slot));
+}
+
+function playersBesides(slots: number[]): RevealedPlayer[] {
+  return playersAt(ALL_SLOTS.filter((slot) => !slots.includes(slot)));
+}
+
+function revealed(slot: number, foundBy?: DuelActor): FoundPlayer {
+  const player = samplePlayer(FORMATION, slot);
+  return foundBy ? { ...player, foundBy } : player;
+}
+
+function roundLeaving(remaining: number, now: number): RoundTiming {
+  return { startedAt: now - (ROUND_MS - remaining), endsAt: now + remaining };
+}
+
+function roundFrom(startedAt: number): RoundTiming {
+  return { startedAt, endsAt: startedAt + ROUND_MS };
+}
+
+function fields(
+  round: RoundTiming | null,
+  found: FoundPlayer[],
+  overrides: Partial<CanvasViewBase> = {},
+): CanvasViewBase {
+  return {
+    match: SAMPLE_MATCH,
+    found,
+    clock: { round, isFrozen: false },
+    input: 'live',
+    toast: null,
+    shakeKey: 0,
+    lifeLostKey: 0,
+    gate: null,
+    ...overrides,
+  };
+}
+
+function frame(base: CanvasViewBase, guess = ''): BaseFrame {
+  return { fields: base, guess };
+}
+
+function toSolo(base: CanvasViewBase, lives = SOLO_LIVES): SoloCanvasView {
+  return { ...base, mode: 'solo', lives, end: null };
+}
+
+function endedView(
+  found: FoundPlayer[],
+  lives: Lives,
+  end: SoloEndView,
+): SoloCanvasView {
+  return { ...toSolo(fields(null, found, { input: 'locked' }), lives), end };
+}
+
+// Seconds each name took, in naming order
+const SAMPLE_ELAPSED_MS = [
+  3_200, 6_100, 1_700, 8_800, 2_400, 4_300, 9_400, 2_900, 5_600, 7_200, 3_800,
+];
+
+function inOrder<T extends RevealedPlayer>(
+  players: T[],
+): (T & Pick<NamedPlayer, 'order' | 'elapsedMs'>)[] {
+  return players.map((player, index) => ({
+    ...player,
+    order: index + 1,
+    elapsedMs: SAMPLE_ELAPSED_MS[index],
+  }));
+}
+
+// Named out of slot order, as a real run is
+const PERFECT_CLEAR_ORDER = [9, 10, 6, 0, 2, 7, 4, 1, 8, 5, 3];
+
+// Today's five solo runs, all played
+function sampleCapLine(now: number): string {
+  return capLine(sampleAllowance(SAMPLE_DAILY_RUNS, now)) ?? '';
+}
+
+type SummaryOptions = {
+  isMissedRevealed?: boolean;
+  isCapped?: boolean;
+  // One match from the archive (R13)
+  isPicked?: boolean;
+  // No clock, not saved (R14)
+  isPractice?: boolean;
+};
+
+function summaryState(
+  description: string,
+  summary: SoloSummary,
+  {
+    isMissedRevealed = false,
+    isCapped = false,
+    isPicked,
+    isPractice,
+  }: SummaryOptions = {},
+): CanvasState<SoloCanvasView> {
+  return {
+    description,
+    build: (now) => ({
+      frame: {
+        view: {
+          ...endedView(summary.found, summary.livesRemaining, {
+            status: 'ready',
+            summary,
+            isMissedRevealed,
+          }),
+          capLine: isCapped ? sampleCapLine(now) : undefined,
+          isPicked,
+          isPractice,
+        },
+        guess: '',
+      },
+    }),
+  };
+}
+
+// Out of lives: 4 named rounds, 3 that ran out
+const RUN_OVER_SUMMARY: SoloSummary = {
+  match: SAMPLE_IDENTITY,
+  found: inOrder(playersAt([7, 0, 10, 4])),
+  missedCount: SQUAD_SIZE - SOLO_FOUND.length,
+  missed: null,
+  livesRemaining: 0,
+  endReason: 'lives_out',
+  accuracy: 0.4,
+  bestStreak: 2,
+  roundTimesMs: [3_200, 15_000, 6_100, 15_000, 2_400, 8_800, 15_000],
+  practice: false,
+};
+
+// Pro gets the list; the pitch waits for Reveal
+const RUN_OVER_PRO_SUMMARY: SoloSummary = {
+  ...RUN_OVER_SUMMARY,
+  missed: playersBesides(SOLO_FOUND_SLOTS),
+};
+
+const PERFECT_CLEAR_SUMMARY: SoloSummary = {
+  match: { ...SAMPLE_IDENTITY, nickname: 'The Long Night' },
+  found: inOrder(playersAt(PERFECT_CLEAR_ORDER)),
+  missedCount: 0,
+  missed: null,
+  livesRemaining: 2,
+  endReason: 'perfect_clear',
+  accuracy: 0.85,
+  bestStreak: 7,
+  roundTimesMs: [
+    2_100, 4_300, 3_800, 6_900, 15_000, 5_200, 2_700, 9_400, 3_300, 7_600,
+    4_100, 11_200,
+  ],
+  practice: false,
+};
+
+const QUIT_SUMMARY: SoloSummary = {
+  match: SAMPLE_IDENTITY,
+  found: inOrder(playersAt(QUIT_FOUND_SLOTS)),
+  missedCount: SQUAD_SIZE - QUIT_FOUND_SLOTS.length,
+  missed: null,
+  livesRemaining: 2,
+  endReason: 'quit',
+  accuracy: 0.6,
+  bestStreak: 3,
+  roundTimesMs: [4_800, 3_100, 15_000, 7_200, 2_900, 5_600, 8_300, 5_200],
+  practice: false,
+};
+
+// Practice: real gaps between finds, no lives
+const PRACTICE_ELAPSED_MS = [12_400, 74_300, 8_900, 131_600, 21_000, 46_200];
+
+const PRACTICE_SUMMARY: SoloSummary = {
+  ...QUIT_SUMMARY,
+  found: playersAt(QUIT_FOUND_SLOTS).map((player, index) => ({
+    ...player,
+    order: index + 1,
+    elapsedMs: PRACTICE_ELAPSED_MS[index],
+  })),
+  missed: playersBesides(QUIT_FOUND_SLOTS),
+  livesRemaining: 3,
+  roundTimesMs: [...PRACTICE_ELAPSED_MS, 38_000],
+  practice: true,
+};
+
+// Quit before naming anyone: the empty line
+const QUIT_EMPTY_SUMMARY: SoloSummary = {
+  match: SAMPLE_IDENTITY,
+  found: [],
+  missedCount: SQUAD_SIZE,
+  missed: null,
+  livesRemaining: MAX_LIVES,
+  endReason: 'quit',
+  accuracy: 0,
+  bestStreak: 0,
+  roundTimesMs: [6_400],
+  practice: false,
+};
+
+function toDuel(
+  base: CanvasViewBase,
+  players: Partial<
+    Pick<
+      DuelCanvasView,
+      | 'you'
+      | 'opponent'
+      | 'turn'
+      | 'lobby'
+      | 'opponentConnection'
+      | 'yourConnection'
+      | 'end'
+      | 'endReason'
+    >
+  > = {},
+): DuelCanvasView {
+  return {
+    ...base,
+    mode: 'duel',
+    you: SAMPLE_YOU,
+    opponent: SAMPLE_OPPONENT,
+    turn: 'you',
+    lobby: null,
+    opponentConnection: null,
+    yourConnection: null,
+    end: null,
+    ...players,
+  };
+}
+
+function wrapSnapshot<V extends CanvasView>(
+  snapshot: BaseSnapshot,
+  wrap: (base: CanvasViewBase) => V,
+): CanvasSnapshot<V> {
+  const toFrame = ({ fields: base, guess }: BaseFrame) => ({
+    view: wrap(base),
+    guess,
+  });
+
+  return snapshot.next
+    ? { frame: toFrame(snapshot.frame), next: toFrame(snapshot.next) }
+    : { frame: toFrame(snapshot.frame) };
+}
+
+function staticState(
+  description: string,
+  remaining: number,
+  overrides: Partial<CanvasViewBase> = {},
+  guess = '',
+): SharedState {
+  return {
+    description,
+    build: (now, found) => ({
+      frame: frame(
+        fields(roundLeaving(remaining, now), found, overrides),
+        guess,
+      ),
+    }),
+  };
+}
+
+const SHARED = {
+  idle: staticState('4 of 11 found, 12s left, input live.', 12_000),
+  suggesting: staticState(
+    '"har" typed: nine suggestions, one named, one without a photo.',
+    12_000,
+    {},
+    SUGGESTING_GUESS,
+  ),
+  warning: staticState('7s left: the clock turns ember.', 7_000),
+  critical: staticState('3s left: red and pulsing.', 3_000),
+  pending: staticState(
+    'Guess sent: input locked with a spinner, clock still running.',
+    9_000,
+    { input: 'pending' },
+    PENDING_GUESS,
+  ),
+  alreadyFound: {
+    description: 'A named player: their slot pulses, "Already named".',
+    build: (now, found) => {
+      const round = roundLeaving(10_000, now);
+      return {
+        frame: frame(fields(round, found), ALREADY_FOUND_GUESS),
+        next: frame(
+          fields(round, found, {
+            toast: { id: 1, message: FEEDBACK_MESSAGES.alreadyFound },
+            pulse: {
+              playerId: samplePlayer(FORMATION, PULSED_SLOT).id,
+              key: 1,
+            },
+          }),
+        ),
+      };
+    },
+  },
+  notInXi: {
+    description: 'A name outside the XI: the input shakes, "Not in this XI".',
+    build: (now, found) => {
+      const round = roundLeaving(10_000, now);
+      return {
+        frame: frame(fields(round, found), MISS_GUESS),
+        next: frame(
+          fields(round, found, {
+            toast: { id: 1, message: FEEDBACK_MESSAGES.notInXi },
+            shakeKey: 1,
+          }),
+          MISS_GUESS,
+        ),
+      };
+    },
+  },
+} satisfies Record<string, SharedState>;
+
+// Server-style messages, one per filter to blame
+const EMPTY_POOL_DETAILS: Record<EmptyPoolReason, string> = {
+  competition: 'No match fits that competition. Try adding another one.',
+  club: 'No match fits the clubs you picked. Try adding another.',
+  era: 'No match fits those years. Try widening the era.',
+  combination:
+    'No match fits these filters together. Try widening any one of them.',
+};
+
+export const EMPTY_POOL_REASONS = Object.keys(
+  EMPTY_POOL_DETAILS,
+) as EmptyPoolReason[];
+
+function emptyPoolError(reason: EmptyPoolReason): ApiError {
+  return {
+    code: 'empty_pool',
+    message: EMPTY_POOL_DETAILS[reason],
+    retryAfterMs: null,
+    emptyBecause: reason,
+  };
+}
+
+const SAMPLE_DAILY_RUNS = 5;
+
+// R11's refusal, as the backend words it
+const DAILY_CAP_ERROR: ApiError = {
+  code: 'forbidden',
+  message: `You've played your ${SAMPLE_DAILY_RUNS} solo runs today. Duels are unlimited.`,
+  retryAfterMs: 3_600_000,
+  reason: 'daily_cap',
+};
+
+// The run's own reducer: the real gate
+function pickRefused(
+  description: string,
+  error: ApiError,
+  practice = false,
+): CanvasState<SoloCanvasView> {
+  const finding = soloRunReducer(INITIAL_SOLO_RUN, {
+    type: 'finding',
+    matchId: SAMPLE_IDENTITY.id,
+    practice,
+  });
+  const state = soloRunReducer(finding, {
+    type: 'failed',
+    step: 'find',
+    error,
+  });
+  return {
+    description,
+    build: () => ({ frame: { view: soloCanvasView(state), guess: '' } }),
+  };
+}
+
+// A practice run past R14's 30-minute idle drop
+function practiceClosed(): CanvasState<SoloCanvasView> {
+  const session: SoloSession = {
+    sessionId: 'sample-practice',
+    status: 'active',
+    match: SAMPLE_MATCH,
+    lives: MAX_LIVES,
+    found: SOLO_FOUND,
+    round: null,
+    practice: true,
+  };
+  const events: SoloRunEvent[] = [
+    { type: 'finding', matchId: null, practice: true },
+    { type: 'sessionReceived', session },
+    {
+      type: 'failed',
+      step: 'guess',
+      error: {
+        code: 'not_found',
+        message: 'That run no longer exists.',
+        retryAfterMs: null,
+      },
+    },
+  ];
+  const state = events.reduce(soloRunReducer, INITIAL_SOLO_RUN);
+  return {
+    description: 'Practice after 30 idle minutes: the run has closed.',
+    build: () => ({ frame: { view: soloCanvasView(state), guess: '' } }),
+  };
+}
+
+const COOLDOWN_MS = 3_000;
+
+const RATE_LIMITED: SharedState = {
+  description: 'Guessing too fast: input locked, a countdown, clock on.',
+  build: (now, found) => ({
+    frame: frame(
+      fields(roundLeaving(10_000, now), found, {
+        input: 'cooldown',
+        cooldownUntil: now + COOLDOWN_MS,
+      }),
+      MISS_GUESS,
+    ),
+  }),
+};
+
+function solo(state: SharedState): CanvasState<SoloCanvasView> {
+  return {
+    description: state.description,
+    build: (now) => wrapSnapshot(state.build(now, SOLO_FOUND), toSolo),
+  };
+}
+
+function duel(state: SharedState): CanvasState<DuelCanvasView> {
+  return {
+    description: state.description,
+    build: (now) =>
+      wrapSnapshot(state.build(now, DUEL_FOUND), (base) => toDuel(base)),
+  };
+}
+
+function loadingFields(): CanvasViewBase {
+  return { ...fields(null, [], { input: 'locked' }), match: null };
+}
+
+function sidePickState(
+  description: string,
+  match: MatchIdentity,
+  isPractice?: boolean,
+): CanvasState<SoloCanvasView> {
+  const gate: CanvasGateView = {
+    ...SOLO_GATE_COPY.choose,
+    sidePick: { match, isChoosing: false },
+  };
+  return {
+    description,
+    build: () => ({
+      frame: {
+        view: {
+          ...toSolo({ ...loadingFields(), gate }, MAX_LIVES),
+          isPractice,
+        },
+        guess: '',
+      },
+    }),
+  };
+}
+
+function emptyPoolFields(reason: EmptyPoolReason): CanvasViewBase {
+  return { ...loadingFields(), gate: emptyPoolGate(emptyPoolError(reason)) };
+}
+
+function soloEmptyPool(
+  reason: EmptyPoolReason,
+  description: string,
+): CanvasState<SoloCanvasView> {
+  return {
+    description,
+    build: () => ({
+      frame: { view: toSolo(emptyPoolFields(reason), MAX_LIVES), guess: '' },
+    }),
+  };
+}
+
+export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
+  loading: {
+    description: 'Header and grid skeletons, stopped clock, input locked.',
+    build: () => ({
+      frame: { view: toSolo(loadingFields(), MAX_LIVES), guess: '' },
+    }),
+  },
+  'pre-match': {
+    description: 'The grid under the gate, waiting for Start.',
+    build: () => ({
+      frame: {
+        view: toSolo(
+          fields(null, [], { input: 'locked', gate: PRE_MATCH_GATE }),
+          MAX_LIVES,
+        ),
+        guess: '',
+      },
+    }),
+  },
+  'side-pick': sidePickState(
+    'The match card before a run: pick a side by its crest.',
+    SAMPLE_IDENTITY,
+  ),
+  'side-pick-long': sidePickState(
+    'Long club names clamp at two lines; one crest falls back.',
+    LONG_NAMES_IDENTITY,
+  ),
+  idle: solo(SHARED.idle),
+  suggesting: solo(SHARED.suggesting),
+  warning: solo(SHARED.warning),
+  critical: solo(SHARED.critical),
+  pending: solo(SHARED.pending),
+  correct: {
+    description: 'A new player: the slot reveals and a new round starts.',
+    build: (now) => ({
+      frame: {
+        view: toSolo(
+          fields(roundLeaving(9_000, now), SOLO_FOUND, { input: 'pending' }),
+        ),
+        guess: PENDING_GUESS,
+      },
+      next: {
+        view: toSolo(
+          fields(roundFrom(now + SNAPSHOT_EVENT_DELAY_MS), [
+            ...SOLO_FOUND,
+            revealed(REVEAL_SLOT),
+          ]),
+        ),
+        guess: '',
+      },
+    }),
+  },
+  'already-found': solo(SHARED.alreadyFound),
+  'not-in-xi': solo(SHARED.notInXi),
+  'life-lost': {
+    description: 'The clock runs out: a pip empties, flash, new round.',
+    build: (now) => ({
+      frame: {
+        view: toSolo(
+          fields(roundLeaving(SNAPSHOT_EVENT_DELAY_MS, now), SOLO_FOUND),
+        ),
+        guess: '',
+      },
+      next: {
+        view: toSolo(
+          fields(roundFrom(now + SNAPSHOT_EVENT_DELAY_MS), SOLO_FOUND, {
+            lifeLostKey: 1,
+          }),
+          SOLO_LIVES - 1,
+        ),
+        guess: '',
+      },
+    }),
+  },
+  'summary-loading': {
+    description: 'The run is over: the summary skeleton holds the rail.',
+    build: () => ({
+      frame: {
+        view: endedView(SOLO_FOUND, 0, { status: 'loading' }),
+        guess: '',
+      },
+    }),
+  },
+  'run-over': summaryState(
+    'Out of lives with 4 named, in order; Reveal is locked.',
+    RUN_OVER_SUMMARY,
+  ),
+  'run-over-pro': summaryState(
+    'As run-over (Pro): Reveal fills the 7 missed slots.',
+    RUN_OVER_PRO_SUMMARY,
+  ),
+  'run-over-pro-revealed': summaryState(
+    'As run-over-pro, already revealed: the 7 on the pitch.',
+    RUN_OVER_PRO_SUMMARY,
+    { isMissedRevealed: true },
+  ),
+  'perfect-clear': summaryState(
+    'All 11 named with 2 lives left: the turf takeover.',
+    PERFECT_CLEAR_SUMMARY,
+  ),
+  quit: summaryState('Quit with 6 named: "Run ended", 5 missed.', QUIT_SUMMARY),
+  'quit-empty': summaryState(
+    'Quit before naming anyone: the empty named list.',
+    QUIT_EMPTY_SUMMARY,
+  ),
+  'run-over-capped': summaryState(
+    "As run-over, today's fifth run: Play a duel, no Play again.",
+    RUN_OVER_SUMMARY,
+    { isCapped: true },
+  ),
+  'run-over-picked': summaryState(
+    'As run-over, a match from the archive: Play it again.',
+    RUN_OVER_SUMMARY,
+    { isPicked: true },
+  ),
+  'solo-match-not-found': pickRefused(
+    'A picked match left the pool: back to the archive.',
+    {
+      code: 'not_found',
+      message: "That match isn't in the game.",
+      retryAfterMs: null,
+    },
+  ),
+  'solo-match-locked': pickRefused(
+    'Free followed a picked-match link: Back to play, See Pro.',
+    {
+      code: 'forbidden',
+      message: 'Picking a match needs Pro.',
+      retryAfterMs: null,
+      reason: 'pro_required',
+    },
+  ),
+  'solo-practice-locked': pickRefused(
+    'Free asked for practice by link: Back to play, See Pro.',
+    {
+      code: 'forbidden',
+      message: 'Practice needs Pro.',
+      retryAfterMs: null,
+      reason: 'pro_required',
+    },
+    true,
+  ),
+  practice: {
+    description: 'Practice mid-run: no ring, no lives, the Practice card.',
+    build: () => ({
+      frame: {
+        view: {
+          ...toSolo(fields(null, SOLO_FOUND), MAX_LIVES),
+          isPractice: true,
+        },
+        guess: '',
+      },
+    }),
+  },
+  'practice-side-pick': sidePickState(
+    'Practice asked for: the Practice card behind the side pick.',
+    SAMPLE_IDENTITY,
+    true,
+  ),
+  'practice-summary': summaryState(
+    'A quit practice run: the tag, minutes per find, Practise again.',
+    PRACTICE_SUMMARY,
+    { isPractice: true },
+  ),
+  'practice-closed': practiceClosed(),
+  'solo-daily-cap': {
+    description: 'Free with no solo runs left: Play a duel or See Pro.',
+    build: (now) => ({
+      frame: {
+        view: toSolo(
+          {
+            ...loadingFields(),
+            gate: dailyCapGate(DAILY_CAP_ERROR, sampleCapLine(now)),
+          },
+          MAX_LIVES,
+        ),
+        guess: '',
+      },
+    }),
+  },
+  'empty-pool-competition': soloEmptyPool(
+    'competition',
+    'No match in those competitions: include every one.',
+  ),
+  'empty-pool-club': soloEmptyPool(
+    'club',
+    'No match for those clubs: include every club.',
+  ),
+  'empty-pool-era': soloEmptyPool(
+    'era',
+    'No match in those seasons: include every season.',
+  ),
+  'empty-pool-combination': soloEmptyPool(
+    'combination',
+    'No single filter to blame: change filters only.',
+  ),
+  'rate-limited': solo(RATE_LIMITED),
+};
+
+const FRESH_OPPONENT = { ...SAMPLE_OPPONENT, lives: MAX_LIVES };
+
+const YOUR_SUMMARY = filterSummary(SAMPLE_FILTERS, SAMPLE_FILTER_OPTIONS);
+
+function filtersStep(submission: FilterSubmission): DuelLobbyView {
+  return { step: 'filters', yours: YOUR_SUMMARY, submission };
+}
+
+function coinFlipStep(winner: DuelActor): DuelLobbyView {
+  const applied = winner === 'you' ? SAMPLE_FILTERS : SAMPLE_OPEN_FILTERS;
+  return {
+    step: 'coinFlip',
+    source: 'coin',
+    winner,
+    applied: filterSummary(applied, SAMPLE_FILTER_OPTIONS),
+    opponent: FRESH_OPPONENT,
+  };
+}
+
+// Every lobby step sits over the loading canvas
+function lobbyState(
+  description: string,
+  lobby: DuelLobbyView,
+): CanvasState<DuelCanvasView> {
+  const isPaired = lobby.step !== 'searching' && lobby.step !== 'noOpponent';
+
+  return {
+    description,
+    build: () => ({
+      frame: {
+        view: toDuel(
+          { ...loadingFields(), gate: lobbyGate(lobby) },
+          {
+            you: { ...SAMPLE_YOU, lives: MAX_LIVES },
+            opponent: isPaired ? FRESH_OPPONENT : null,
+            turn: null,
+            lobby,
+          },
+        ),
+        guess: '',
+      },
+    }),
+  };
+}
+
+export const LOBBY_STATES = {
+  searching: lobbyState('In the queue: an ambient pulse, no ring, Cancel.', {
+    step: 'searching',
+  }),
+  paired: lobbyState('Opponent found: both handles in their colours.', {
+    step: 'paired',
+    opponent: FRESH_OPPONENT,
+  }),
+  filters: lobbyState(
+    'Your filters to lock in; theirs still choosing.',
+    filtersStep({ yours: 'pending', theirs: 'pending' }),
+  ),
+  'filters-locked': lobbyState(
+    'You locked in; they are still choosing.',
+    filtersStep({ yours: 'submitted', theirs: 'pending' }),
+  ),
+  'filters-both': lobbyState(
+    'Both locked in, waiting on the coin flip.',
+    filtersStep({ yours: 'submitted', theirs: 'submitted' }),
+  ),
+  'coin-flip-won': lobbyState(
+    'The flip went your way: your set is used.',
+    coinFlipStep('you'),
+  ),
+  'coin-flip-lost': lobbyState(
+    'The flip went their way: their set is used.',
+    coinFlipStep('opponent'),
+  ),
+  'no-opponent': lobbyState('The queue timed out: play solo or search again.', {
+    step: 'noOpponent',
+  }),
+} satisfies Record<string, CanvasState<DuelCanvasView>>;
+
+const SAMPLE_ROOM_CODE = 'K7QM2X';
+// Close to the server's 10 minutes, still running
+const ROOM_LEFT_MS = 9 * 60_000 + 41_000;
+
+function roomRefusal(
+  code: ApiError['code'],
+  message: string,
+  reason?: ApiError['reason'],
+): ApiError {
+  return { code, message, retryAfterMs: null, reason };
+}
+
+// Through the real view, so the copy can't drift
+function roomState(
+  description: string,
+  patch: (now: number) => Partial<DuelSessionState>,
+  hostAccess?: ProAccess,
+): CanvasState<DuelCanvasView> {
+  return {
+    description,
+    build: (now) => ({
+      frame: {
+        view: {
+          ...duelCanvasView(
+            {
+              ...INITIAL_DUEL_SESSION,
+              filters: SAMPLE_FILTERS,
+              options: SAMPLE_FILTER_OPTIONS,
+              isPrivate: true,
+              ...patch(now),
+            },
+            { ...SAMPLE_YOU, lives: MAX_LIVES },
+          ),
+          hostAccess,
+        },
+        guess: '',
+      },
+    }),
+  };
+}
+
+function joinRefused(error: ApiError): Partial<DuelSessionState> {
+  return {
+    phase: 'failed',
+    joinCode: SAMPLE_ROOM_CODE,
+    failure: { step: 'joinRoom', error },
+  };
+}
+
+export const ROOM_STATES = {
+  'room-waiting': roomState(
+    'Your room is open: the code, Copy code and Copy link, Closes in.',
+    (now) => ({
+      phase: 'hosting',
+      room: {
+        code: SAMPLE_ROOM_CODE,
+        filters: SAMPLE_FILTERS,
+        expiresAt: now + ROOM_LEFT_MS,
+      },
+    }),
+  ),
+  'room-expired': roomState(
+    'No one joined in 10 minutes: create a new room.',
+    () => ({ phase: 'roomExpired' }),
+  ),
+  'room-joining': roomState("Joining a friend's room by its code.", () => ({
+    phase: 'joining',
+    joinCode: SAMPLE_ROOM_CODE,
+  })),
+  'room-filters': roomState(
+    "Joined: their room's filters are used, no coin flip.",
+    () => ({
+      phase: 'coinFlip',
+      opponent: FRESH_OPPONENT,
+      coinFlip: {
+        winner: 'opponent',
+        filters: SAMPLE_OPEN_FILTERS,
+        source: 'room',
+      },
+    }),
+  ),
+  'room-not-found': roomState('A wrong or closed code.', () =>
+    joinRefused(roomRefusal('not_found', 'No open room has that code.')),
+  ),
+  'room-full': roomState('A full room answers as a closed one.', () =>
+    joinRefused(roomRefusal('not_found', 'No open room has that code.')),
+  ),
+  'room-own': roomState("Your own room's code, typed by you.", () =>
+    joinRefused(
+      roomRefusal(
+        'forbidden',
+        "That's your own room. Send the code to a friend.",
+      ),
+    ),
+  ),
+  'room-pro-required': roomState(
+    'A Free player tried to host: hosting needs Pro.',
+    () => ({
+      phase: 'failed',
+      failure: {
+        step: 'createRoom',
+        error: roomRefusal(
+          'forbidden',
+          'Hosting a room needs Pro. Anyone can join one.',
+          'pro_required',
+        ),
+      },
+    }),
+  ),
+  'room-result': roomState(
+    'A room game ended: New room and Back to play.',
+    () => ({
+      phase: 'finished',
+      result: resultOf('win', DUEL_FINDERS, { you: 2, opponent: 0 }),
+    }),
+  ),
+  'room-result-free': roomState(
+    'A Free player after a room game: Back to play, New room locked.',
+    () => ({
+      phase: 'finished',
+      result: resultOf('win', DUEL_FINDERS, { you: 2, opponent: 0 }),
+    }),
+    'locked',
+  ),
+} satisfies Record<string, CanvasState<DuelCanvasView>>;
+
+// Naming order; a correct name passes the turn
+const DRAW_FINDERS: [number, DuelActor][] = [
+  [0, 'you'],
+  [1, 'opponent'],
+  [2, 'you'],
+  [4, 'opponent'],
+  [3, 'you'],
+  [5, 'opponent'],
+  [6, 'you'],
+  [7, 'opponent'],
+  [8, 'you'],
+  [10, 'opponent'],
+  [9, 'you'],
+];
+
+const LOSS_FINDERS: [number, DuelActor][] = [
+  ...DUEL_FINDERS,
+  [2, 'opponent'],
+  [6, 'opponent'],
+];
+
+const FORFEIT_FINDERS: [number, DuelActor][] = [
+  [0, 'you'],
+  [4, 'opponent'],
+  [9, 'you'],
+];
+
+function foundBy(finders: [number, DuelActor][]): DuelNamedPlayer[] {
+  return inOrder(
+    finders.map(([slot, finder]) => ({
+      ...samplePlayer(FORMATION, slot),
+      foundBy: finder,
+    })),
+  );
+}
+
+function resultOf(
+  outcome: DuelResult['outcome'],
+  finders: [number, DuelActor][],
+  lives: { you: Lives; opponent: Lives },
+  isForfeit = false,
+): DuelResult {
+  return {
+    outcome,
+    match: SAMPLE_IDENTITY,
+    found: foundBy(finders),
+    you: { ...SAMPLE_YOU, lives: lives.you },
+    opponent: { ...SAMPLE_OPPONENT, lives: lives.opponent },
+    isForfeit,
+  };
+}
+
+// The rail swaps for the result; no clock runs
+function resultState(
+  description: string,
+  result: DuelResult,
+  endReason?: DuelEndReason,
+): CanvasState<DuelCanvasView> {
+  return {
+    description,
+    build: () => ({
+      frame: {
+        view: toDuel(fields(null, result.found, { input: 'locked' }), {
+          you: result.you,
+          opponent: result.opponent,
+          turn: null,
+          end: result,
+          endReason,
+        }),
+        guess: '',
+      },
+    }),
+  };
+}
+
+export const RESULT_STATES = {
+  'result-win': resultState(
+    'They ran out of lives: the floodlight win card.',
+    resultOf('win', DUEL_FINDERS, { you: 2, opponent: 0 }),
+  ),
+  'result-loss': resultState(
+    'You ran out of lives: the loss card, same full reveal.',
+    resultOf('loss', LOSS_FINDERS, { you: 0, opponent: 1 }),
+  ),
+  'result-draw': resultState(
+    'All eleven named: both colours, neither leading.',
+    resultOf('draw', DRAW_FINDERS, { you: 2, opponent: 1 }),
+  ),
+  'result-forfeit-win': resultState(
+    'They left: a win card marked as a forfeit.',
+    resultOf('forfeit_win', FORFEIT_FINDERS, { you: 3, opponent: 2 }, true),
+  ),
+  'result-forfeit-loss': resultState(
+    'You left: a loss card marked as a forfeit.',
+    resultOf('loss', FORFEIT_FINDERS, { you: 2, opponent: 3 }, true),
+  ),
+  'connection-lost': resultState(
+    'You never came back: a forfeit loss, "Disconnected".',
+    resultOf('loss', FORFEIT_FINDERS, { you: 2, opponent: 3 }, true),
+    'connectionLost',
+  ),
+} satisfies Record<string, CanvasState<DuelCanvasView>>;
+
+const THEIR_TURN = { turn: 'opponent' } as const;
+
+export const DUEL_CANVAS_STATES: Record<string, CanvasState<DuelCanvasView>> = {
+  loading: {
+    description: 'Header and grid skeletons, both clocks stopped.',
+    build: () => ({
+      frame: {
+        view: toDuel(loadingFields(), {
+          you: { ...SAMPLE_YOU, lives: MAX_LIVES },
+          opponent: { ...SAMPLE_OPPONENT, lives: MAX_LIVES },
+        }),
+        guess: '',
+      },
+    }),
+  },
+  ...LOBBY_STATES,
+  ...ROOM_STATES,
+  idle: duel(SHARED.idle),
+  warning: duel(SHARED.warning),
+  critical: duel(SHARED.critical),
+  pending: duel(SHARED.pending),
+  correct: {
+    description: 'A new player: the slot reveals and your clock freezes.',
+    build: (now) => {
+      const round = roundLeaving(9_000, now);
+      return {
+        frame: {
+          view: toDuel(fields(round, DUEL_FOUND, { input: 'pending' })),
+          guess: PENDING_GUESS,
+        },
+        next: {
+          view: toDuel(
+            fields(round, [...DUEL_FOUND, revealed(REVEAL_SLOT, 'you')], {
+              clock: { round, isFrozen: true },
+              input: 'locked',
+            }),
+          ),
+          guess: '',
+        },
+      };
+    },
+  },
+  'already-found': duel(SHARED.alreadyFound),
+  'not-in-xi': duel(SHARED.notInXi),
+  'life-lost': {
+    description: 'Your clock runs out: a pip empties, flash, turn passes.',
+    build: (now) => ({
+      frame: {
+        view: toDuel(
+          fields(roundLeaving(SNAPSHOT_EVENT_DELAY_MS, now), DUEL_FOUND),
+        ),
+        guess: '',
+      },
+      next: {
+        view: toDuel(
+          fields(roundFrom(now + SNAPSHOT_EVENT_DELAY_MS), DUEL_FOUND, {
+            lifeLostKey: 1,
+            input: 'locked',
+          }),
+          {
+            you: { ...SAMPLE_YOU, lives: SAMPLE_YOU.lives - 1 },
+            ...THEIR_TURN,
+          },
+        ),
+        guess: '',
+      },
+    }),
+  },
+  'their-turn': {
+    description: 'Their clock runs in blue; you wait with no input.',
+    build: (now) => ({
+      frame: {
+        view: toDuel(
+          fields(roundLeaving(11_000, now), DUEL_FOUND, { input: 'locked' }),
+          THEIR_TURN,
+        ),
+        guess: '',
+      },
+    }),
+  },
+  'their-reveal': {
+    description: 'They name a player: the slot fills with a blue tint.',
+    build: (now) => {
+      const round = roundLeaving(9_000, now);
+      return {
+        frame: {
+          view: toDuel(
+            fields(round, DUEL_FOUND, { input: 'locked' }),
+            THEIR_TURN,
+          ),
+          guess: '',
+        },
+        next: {
+          view: toDuel(
+            fields(
+              round,
+              [...DUEL_FOUND, revealed(THEIR_REVEAL_SLOT, 'opponent')],
+              { clock: { round, isFrozen: true }, input: 'locked' },
+            ),
+            THEIR_TURN,
+          ),
+          guess: '',
+        },
+      };
+    },
+  },
+  'opponent-reconnecting': {
+    description: 'Their socket dropped: ember badge, their clock runs on.',
+    build: (now) => ({
+      frame: {
+        view: toDuel(
+          fields(roundLeaving(11_000, now), DUEL_FOUND, { input: 'locked' }),
+          {
+            ...THEIR_TURN,
+            opponentConnection: {
+              status: 'reconnecting',
+              reconnectDeadline: now + 18_000,
+            },
+          },
+        ),
+        guess: '',
+      },
+    }),
+  },
+  ...RESULT_STATES,
+  'duel-empty-pool': {
+    description: 'Your filters found nothing: widen them or change them.',
+    build: () => ({
+      frame: {
+        view: toDuel(emptyPoolFields('club'), {
+          you: { ...SAMPLE_YOU, lives: MAX_LIVES },
+          opponent: FRESH_OPPONENT,
+          turn: null,
+        }),
+        guess: '',
+      },
+    }),
+  },
+  'duel-rate-limited': duel(RATE_LIMITED),
+  'you-reconnecting': {
+    description: 'Your socket dropped: the gate counts down, clock runs on.',
+    build: (now) => {
+      const yourConnection = {
+        status: 'reconnecting',
+        reconnectDeadline: now + 18_000,
+      } as const;
+      return {
+        frame: {
+          view: toDuel(
+            fields(roundLeaving(9_000, now), DUEL_FOUND, {
+              input: 'locked',
+              gate: reconnectingGate(yourConnection),
+            }),
+            { yourConnection },
+          ),
+          guess: '',
+        },
+      };
+    },
+  },
+  'their-life-lost': {
+    description: 'Their clock runs out: their pip empties, no flash.',
+    build: (now) => ({
+      frame: {
+        view: toDuel(
+          fields(roundLeaving(SNAPSHOT_EVENT_DELAY_MS, now), DUEL_FOUND, {
+            input: 'locked',
+          }),
+          THEIR_TURN,
+        ),
+        guess: '',
+      },
+      next: {
+        view: toDuel(
+          fields(roundFrom(now + SNAPSHOT_EVENT_DELAY_MS), DUEL_FOUND),
+          {
+            opponent: { ...SAMPLE_OPPONENT, lives: SAMPLE_OPPONENT.lives - 1 },
+          },
+        ),
+        guess: '',
+      },
+    }),
+  },
+};
+
+export const CANVAS_STATES: Record<CanvasMode, Record<string, CanvasState>> = {
+  solo: SOLO_CANVAS_STATES,
+  duel: DUEL_CANVAS_STATES,
+};
+
+export function resolveCanvasState(
+  mode: CanvasMode,
+  param: string | string[] | undefined,
+): CanvasState {
+  const states = CANVAS_STATES[mode];
+  const name =
+    typeof param === 'string' && Object.hasOwn(states, param)
+      ? param
+      : DEFAULT_CANVAS_STATE;
+
+  return states[name];
+}

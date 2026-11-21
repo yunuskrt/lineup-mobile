@@ -1,0 +1,205 @@
+import { ARCHIVE_SEARCH_MAX } from '@/lib/api/schemas/catalog';
+import { authErrorMessageOf } from '@/lib/auth';
+import { utcDateLabel } from '@/lib/date-label';
+import {
+  filtersFromParams,
+  filtersToParams,
+  withoutParams,
+  withQuery,
+} from '@/lib/filters';
+import { filterSummary } from '@/lib/lobby';
+import { pluralOf } from '@/lib/plural';
+import { withPractice } from '@/lib/practice';
+import type { ArchiveStatus, ArchiveView } from '@/types/archive';
+import type { ArchivePage, ArchiveQuery, FilterOptions } from '@/types/catalog';
+import type { Filters } from '@/types/filters';
+import type { MatchIdentity } from '@/types/match';
+import type { ProAccess } from '@/types/pro';
+import type { HistoryMoreState } from '@/types/profile-screen';
+import type { SoloStartRequest } from '@/types/solo';
+
+export const ARCHIVE_PATH = '/archive';
+export const ARCHIVE_SEARCH_PARAM = 'q';
+export const ARCHIVE_SEARCH_DELAY_MS = 300;
+export const PICKED_MATCH_PARAM = 'match';
+
+// Short months keep the date column narrow
+const ARCHIVE_DATE = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+const COUNT = new Intl.NumberFormat('en-GB');
+
+export function archiveDateLabel(isoDate: string): string {
+  return utcDateLabel(ARCHIVE_DATE, isoDate);
+}
+
+export function archiveSearchText(text: string): string {
+  return text.trim().slice(0, ARCHIVE_SEARCH_MAX);
+}
+
+export function archiveSearchFrom(params: URLSearchParams): string {
+  return archiveSearchText(params.get(ARCHIVE_SEARCH_PARAM) ?? '');
+}
+
+// A run on one match from the archive (R13, R14)
+export function pickedMatchPath(matchId: string, practice = false): string {
+  const params = new URLSearchParams({ [PICKED_MATCH_PARAM]: matchId });
+  return withQuery('/play/solo', withPractice(params, practice));
+}
+
+// Back to /play: the filters stay, the pick goes
+export function withoutPickedMatch(params: URLSearchParams): URLSearchParams {
+  return withoutParams(params, [PICKED_MATCH_PARAM]);
+}
+
+export function pickedMatchFrom(params: URLSearchParams): string | null {
+  return params.get(PICKED_MATCH_PARAM)?.trim() || null;
+}
+
+type StartOptions = { matchId?: string | null; practice?: boolean };
+
+// The filters ride along; a picked match wins
+export function soloStartRequestOf(
+  filters: Filters,
+  { matchId = null, practice = false }: StartOptions = {},
+): SoloStartRequest {
+  return {
+    ...filters,
+    ...(matchId ? { matchId } : {}),
+    ...(practice ? { practice: true } : {}),
+  };
+}
+
+// Same two buttons per row; names say which
+export function playMatchLabel(
+  match: MatchIdentity,
+  verb: 'Play' | 'Practise' = 'Play',
+): string {
+  return `${verb} ${match.home.name} v ${match.away.name}, ${archiveDateLabel(match.date)}`;
+}
+
+// R12 takes one competition and one club at most
+export function archiveQueryOf(q: string, filters: Filters): ArchiveQuery {
+  const search = archiveSearchText(q);
+  const [competitionId] = filters.competitionIds;
+  const [clubId] = filters.clubIds;
+  return {
+    ...(search ? { q: search } : {}),
+    ...(filters.competitionIds.length === 1 ? { competitionId } : {}),
+    ...(filters.clubIds.length === 1 ? { clubId } : {}),
+    from: filters.era.from,
+    to: filters.era.to,
+  };
+}
+
+export function archiveQueryFromParams(
+  params: URLSearchParams,
+  options: FilterOptions,
+): ArchiveQuery {
+  return archiveQueryOf(
+    archiveSearchFrom(params),
+    filtersFromParams(params, options),
+  );
+}
+
+// The filters as on /play, plus the search
+export function archiveParams(
+  q: string,
+  filters: Filters,
+  options: FilterOptions,
+): URLSearchParams {
+  const params = filtersToParams(filters, options);
+  const search = archiveSearchText(q);
+  if (search) params.set(ARCHIVE_SEARCH_PARAM, search);
+  return params;
+}
+
+// One club at a time: the newest pick wins
+export function withOneClub(previous: Filters, next: Filters): Filters {
+  if (next.clubIds.length <= 1) return next;
+  const added = next.clubIds.filter((id) => !previous.clubIds.includes(id));
+  return { ...next, clubIds: (added.length ? added : next.clubIds).slice(-1) };
+}
+
+// The filter groups not left on Any
+function activeFilterValues(
+  filters: Filters,
+  options: FilterOptions,
+): string[] {
+  return filterSummary(filters, options)
+    .map((line) => line.value)
+    .filter((value) => value !== 'Any' && value !== 'Any season');
+}
+
+// Null when every filter is on Any
+export function activeFiltersLabel(
+  filters: Filters,
+  options: FilterOptions,
+): string | null {
+  const values = activeFilterValues(filters, options);
+  return values.length ? values.join(', ') : null;
+}
+
+export function activeFilterCount(
+  filters: Filters,
+  options: FilterOptions,
+): number {
+  return activeFilterValues(filters, options).length;
+}
+
+export function archiveTotalLine(total: number): string {
+  const noun = pluralOf(total, 'match', 'matches');
+  return `${COUNT.format(total)} ${noun}. Search by club, competition or season.`;
+}
+
+type ArchiveInput = {
+  access: ProAccess;
+  // A failed background refetch keeps its data
+  options: { isError: boolean; error: unknown; hasData: boolean };
+  pages: ArchivePage[] | undefined;
+  isError: boolean;
+  error: unknown;
+  isPlaceholderData: boolean;
+  isFetchingNextPage: boolean;
+  isFetchNextPageError: boolean;
+  hasNextPage: boolean;
+};
+
+function moreState(input: ArchiveInput): HistoryMoreState {
+  if (input.isFetchingNextPage) return 'loading';
+  if (input.isFetchNextPageError) return 'failed';
+  return input.hasNextPage ? 'idle' : 'end';
+}
+
+function hasOptionsFailed({ options }: ArchiveInput): boolean {
+  return options.isError && !options.hasData;
+}
+
+function statusOf(input: ArchiveInput, total: number | null): ArchiveStatus {
+  if (input.access === 'pending') return 'pending';
+  if (input.access === 'locked') return 'locked';
+  if (hasOptionsFailed(input)) return 'error';
+  if (total === null) return input.isError ? 'error' : 'loading';
+  return total === 0 ? 'empty' : 'list';
+}
+
+// Locked never asks; a failed page keeps the rest
+export function archiveView(input: ArchiveInput): ArchiveView {
+  const pages = input.access === 'open' ? input.pages : undefined;
+  const total = pages?.[0]?.total ?? null;
+  const status = statusOf(input, total);
+  const failure = hasOptionsFailed(input) ? input.options.error : input.error;
+
+  return {
+    status,
+    total,
+    entries: pages?.flatMap((page) => page.entries) ?? [],
+    more: moreState(input),
+    errorMessage: status === 'error' ? authErrorMessageOf(failure) : undefined,
+    isRefreshing: input.isPlaceholderData,
+  };
+}

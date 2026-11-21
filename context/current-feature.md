@@ -19,3 +19,4 @@ Not Started
 <!-- Keep this updated. Earliest to latest -->
 
 - M01 Repo & Scaffold: template cleared, dev build, scripts, ESLint rules.
+- M02 Core Carry-over: copy list A, moved types, ledger, /dev/runtime.

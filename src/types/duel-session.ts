@@ -1,0 +1,141 @@
+import type { ApiError } from '@/types/api';
+import type { FilterOptions } from '@/types/catalog';
+import type {
+  CoinFlipResult,
+  ConnectionState,
+  DuelLifeLost,
+  DuelPlayer,
+  DuelResult,
+  DuelSession,
+  FilterSubmission,
+  RoomState,
+} from '@/types/duel';
+import type { GridPulse, ToastMessage } from '@/types/feedback';
+import type { Filters } from '@/types/filters';
+import type { DuelOutcome, GuessResult } from '@/types/game';
+
+export type DuelSessionPhase =
+  | 'connecting'
+  | 'searching'
+  // Your room is open, waiting for a friend
+  | 'hosting'
+  | 'roomExpired'
+  | 'joining'
+  | 'paired'
+  | 'filters'
+  | 'coinFlip'
+  | 'playing'
+  | 'finished'
+  // Back after the duel ended without you
+  | 'endedAway'
+  | 'noOpponent'
+  | 'failed'
+  // The server turned this build away
+  | 'refused';
+
+export type DuelFailureStep =
+  | 'connect'
+  | 'queue'
+  | 'createRoom'
+  | 'joinRoom'
+  | 'lock'
+  | 'match'
+  | 'forfeit'
+  // The socket closed and won't reopen by itself
+  | 'connection';
+
+export type DuelFailure = { step: DuelFailureStep; error: ApiError };
+
+// Connecting again, then waiting for `matchReady`
+export type DuelResumeStep = 'connecting' | 'waiting';
+
+// Read from history: the server sent no result
+export type AwayResult =
+  | { status: 'checking' }
+  | { status: 'found'; outcome: DuelOutcome; foundCount: number }
+  | { status: 'unknown' };
+
+export type DuelSessionState = {
+  phase: DuelSessionPhase;
+  // Read from the URL once the catalog loads
+  filters: Filters | null;
+  options: FilterOptions | null;
+  // A room game: New room replaces Play again
+  isPrivate: boolean;
+  room: RoomState | null;
+  joinCode: string | null;
+  opponent: DuelPlayer | null;
+  submission: FilterSubmission;
+  coinFlip: CoinFlipResult | null;
+  session: DuelSession | null;
+  result: DuelResult | null;
+  opponentConnection: ConnectionState | null;
+  // Set while the server reports you reconnecting
+  yourConnection: ConnectionState | null;
+  // Your forfeit came from a dropped connection
+  isConnectionLost: boolean;
+  resume: DuelResumeStep | null;
+  // The server dropped you from the queue
+  isRequeueing: boolean;
+  // A server error mid-duel: rejoin to learn more
+  isResyncing: boolean;
+  away: AwayResult | null;
+  isLocking: boolean;
+  isGuessing: boolean;
+  isForfeiting: boolean;
+  // Server retry time after a rate-limited command
+  cooldownUntil: number | null;
+  failure: DuelFailure | null;
+  toast: ToastMessage | null;
+  pulse?: GridPulse;
+  shakeKey: number;
+  lifeLostKey: number;
+  // Bumps when a verdict says to clear the input
+  clearKey: number;
+};
+
+export type DuelSessionEvent =
+  | { type: 'started' }
+  | {
+      type: 'prepared';
+      filters: Filters;
+      options: FilterOptions;
+      isPrivate: boolean;
+    }
+  | { type: 'roomCreated'; room: RoomState }
+  | { type: 'roomExpired' }
+  | { type: 'joining'; code: string }
+  | { type: 'queued' }
+  | { type: 'queueTimedOut' }
+  | { type: 'paired'; opponent: DuelPlayer }
+  | { type: 'filtersOpened' }
+  | { type: 'filtersUpdated'; submission: FilterSubmission }
+  | { type: 'locking' }
+  | { type: 'coinFlip'; result: CoinFlipResult }
+  | { type: 'matchReady'; session: DuelSession }
+  // Only these three carry state (W05b)
+  | { type: 'roundStarted'; session: DuelSession }
+  | { type: 'turnChanged'; session: DuelSession }
+  | { type: 'guessSubmitted' }
+  | { type: 'guessResolved'; result: GuessResult }
+  | { type: 'guessFailed'; error: ApiError; at: number }
+  | { type: 'cooldownEnded' }
+  | { type: 'lifeLost'; cue: DuelLifeLost }
+  | { type: 'opponentConnection'; connection: ConnectionState }
+  | { type: 'disconnected'; connection: ConnectionState }
+  // Socket.IO's own: the server never sends these
+  | { type: 'connectionDropped'; deadline: number }
+  | { type: 'connectionRestored' }
+  | { type: 'resuming' }
+  | { type: 'resumeMissed' }
+  | { type: 'awayResultRead'; result: AwayResult }
+  | { type: 'forfeiting' }
+  | { type: 'finished'; result: DuelResult }
+  | { type: 'error'; error: ApiError; at: number }
+  // Your own set, widened after an empty pool
+  | { type: 'filtersWidened'; filters: Filters }
+  // `at` starts a rate limit's wait
+  | { type: 'failed'; step: DuelFailureStep; error: ApiError; at: number }
+  | { type: 'closed'; error: ApiError; at: number };
+
+export type DuelGateAction = 'widen' | 'leave' | 'retry' | 'playAgain';

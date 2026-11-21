@@ -1,0 +1,162 @@
+# Web Carry-over
+
+Every file this repo copied from `lineup-web`. Each one sits at the **same path** in `../lineup-web/`, and belongs to this repo from the moment it was pasted: it builds with the web deleted and changes on its own schedule.
+
+- **Word for word:** byte-identical to the web file when copied. A web fix is "paste the new version and run `npm test`".
+- **Adapted:** changed here; the note says what, so a re-paste keeps the change.
+- **Browser-only:** compiles here, but must not run until the named phase adapts it.
+
+Add a row for every file a copy list brings in, and update the state when a phase adapts one. Components are never copied.
+
+## Extracted from web components (M02)
+
+Not copies of whole files: types the web keeps inside `.tsx` components, moved here so the copies can import them.
+
+| File | Web source | Phase |
+| --- | --- | --- |
+| `src/types/guess-input.ts` | `GuessInputStatus` in `src/components/game/GuessInput.tsx` | M02 |
+| `src/types/quit-dialog.ts` | `QuitDialogCopy` in `src/components/game/QuitDialog.tsx` | M02 |
+
+## Copy list A — Core (M02), 139 files
+
+| File | Phase | State |
+| --- | --- | --- |
+| `src/components/game/competition-kind.test.ts` | M02 | word for word |
+| `src/components/game/competition-kind.ts` | M02 | word for word |
+| `src/components/game/shirt.ts` | M02 | word for word |
+| `src/components/pitch/person.ts` | M02 | word for word |
+| `src/components/play/filter-icons.ts` | M02 | word for word |
+| `src/lib/api/client.ts` | M02 | word for word |
+| `src/lib/api/duel-client.ts` | M02 | word for word |
+| `src/lib/api/duel-emitter.test.ts` | M02 | word for word |
+| `src/lib/api/duel-emitter.ts` | M02 | word for word |
+| `src/lib/api/protocol.ts` | M02 | word for word |
+| `src/lib/api/retry.test.ts` | M02 | word for word |
+| `src/lib/api/retry.ts` | M02 | word for word |
+| `src/lib/api/schemas/auth.ts` | M02 | word for word |
+| `src/lib/api/schemas/catalog.ts` | M02 | word for word |
+| `src/lib/api/schemas/common.test.ts` | M02 | word for word |
+| `src/lib/api/schemas/common.ts` | M02 | word for word |
+| `src/lib/api/schemas/config.test.ts` | M02 | word for word |
+| `src/lib/api/schemas/config.ts` | M02 | word for word |
+| `src/lib/api/schemas/duel.test.ts` | M02 | word for word |
+| `src/lib/api/schemas/duel.ts` | M02 | word for word |
+| `src/lib/api/schemas/game.ts` | M02 | word for word |
+| `src/lib/api/schemas/match.test.ts` | M02 | word for word |
+| `src/lib/api/schemas/match.ts` | M02 | word for word |
+| `src/lib/api/schemas/player.test.ts` | M02 | word for word |
+| `src/lib/api/schemas/player.ts` | M02 | word for word |
+| `src/lib/api/schemas/profile.ts` | M02 | word for word |
+| `src/lib/api/schemas/result.ts` | M02 | word for word |
+| `src/lib/api/schemas/solo.test.ts` | M02 | word for word |
+| `src/lib/api/schemas/solo.ts` | M02 | word for word |
+| `src/lib/api/schemas/user.ts` | M02 | word for word |
+| `src/lib/api/session-loss.test.ts` | M02 | word for word |
+| `src/lib/api/session-loss.ts` | M02 | word for word |
+| `src/lib/api/unwrap.test.ts` | M02 | word for word |
+| `src/lib/api/unwrap.ts` | M02 | word for word |
+| `src/lib/archive.test.ts` | M02 | word for word |
+| `src/lib/archive.ts` | M02 | word for word |
+| `src/lib/auth.test.ts` | M02 | word for word |
+| `src/lib/auth.ts` | M02 | word for word |
+| `src/lib/canvas.test.ts` | M02 | word for word |
+| `src/lib/canvas.ts` | M02 | word for word |
+| `src/lib/countdown.test.ts` | M02 | word for word |
+| `src/lib/countdown.ts` | M02 | word for word |
+| `src/lib/date-label.test.ts` | M02 | word for word |
+| `src/lib/date-label.ts` | M02 | word for word |
+| `src/lib/dev/archive-states.test.ts` | M02 | word for word |
+| `src/lib/dev/archive-states.ts` | M02 | word for word |
+| `src/lib/dev/canvas-states.test.ts` | M02 | word for word |
+| `src/lib/dev/canvas-states.ts` | M02 | word for word |
+| `src/lib/dev/profile-states.test.ts` | M02 | word for word |
+| `src/lib/dev/profile-states.ts` | M02 | word for word |
+| `src/lib/dev/samples.ts` | M02 | word for word |
+| `src/lib/duel-result.test.ts` | M02 | word for word |
+| `src/lib/duel-result.ts` | M02 | word for word |
+| `src/lib/duel-session.ts` | M02 | adapted: imports `GuessInputStatus` from `@/types/guess-input` |
+| `src/lib/duel-status.test.ts` | M02 | word for word |
+| `src/lib/duel-status.ts` | M02 | word for word |
+| `src/lib/feedback.test.ts` | M02 | word for word |
+| `src/lib/feedback.ts` | M02 | word for word |
+| `src/lib/filters.test.ts` | M02 | word for word |
+| `src/lib/filters.ts` | M02 | word for word. **Browser-only:** `replaceQuery` uses `window.history`; M13 replaces it with Expo Router |
+| `src/lib/formation.test.ts` | M02 | word for word |
+| `src/lib/formation.ts` | M02 | word for word |
+| `src/lib/guess.test.ts` | M02 | word for word |
+| `src/lib/guess.ts` | M02 | word for word |
+| `src/lib/initials.test.ts` | M02 | word for word |
+| `src/lib/initials.ts` | M02 | word for word |
+| `src/lib/landing-demo.ts` | M02 | word for word |
+| `src/lib/landing.ts` | M02 | word for word |
+| `src/lib/lobby.test.ts` | M02 | word for word |
+| `src/lib/lobby.ts` | M02 | word for word |
+| `src/lib/match-header.ts` | M02 | word for word |
+| `src/lib/normalize.test.ts` | M02 | word for word |
+| `src/lib/normalize.ts` | M02 | word for word |
+| `src/lib/play-steps.test.ts` | M02 | word for word |
+| `src/lib/play-steps.ts` | M02 | word for word |
+| `src/lib/plural.test.ts` | M02 | word for word |
+| `src/lib/plural.ts` | M02 | word for word |
+| `src/lib/practice.test.ts` | M02 | word for word |
+| `src/lib/practice.ts` | M02 | adapted: imports `QuitDialogCopy` from `@/types/quit-dialog`. **Browser-only:** the open-run flag uses `sessionStorage`; M14 moves it to device storage |
+| `src/lib/pro.test.ts` | M02 | word for word |
+| `src/lib/pro.ts` | M02 | word for word |
+| `src/lib/profile.test.ts` | M02 | word for word |
+| `src/lib/profile.ts` | M02 | word for word |
+| `src/lib/query-keys.ts` | M02 | word for word |
+| `src/lib/result-actions.test.ts` | M02 | word for word |
+| `src/lib/result-actions.ts` | M02 | word for word |
+| `src/lib/room-code.test.ts` | M02 | word for word |
+| `src/lib/room-code.ts` | M02 | word for word |
+| `src/lib/server-clock.test.ts` | M02 | word for word |
+| `src/lib/server-clock.ts` | M02 | word for word |
+| `src/lib/solo-allowance.test.ts` | M02 | word for word |
+| `src/lib/solo-allowance.ts` | M02 | word for word |
+| `src/lib/solo-run.test.ts` | M02 | word for word |
+| `src/lib/solo-run.ts` | M02 | adapted: imports `GuessInputStatus` from `@/types/guess-input`, and `QuitDialogCopy` from `@/types/quit-dialog` |
+| `src/lib/sound-cues.test.ts` | M02 | word for word |
+| `src/lib/sound-cues.ts` | M02 | word for word |
+| `src/lib/suggestions.test.ts` | M02 | word for word |
+| `src/lib/suggestions.ts` | M02 | word for word |
+| `src/lib/summary.test.ts` | M02 | word for word |
+| `src/lib/summary.ts` | M02 | word for word |
+| `src/lib/system-states.test.ts` | M02 | word for word |
+| `src/lib/system-states.ts` | M02 | word for word |
+| `src/lib/utils.test.ts` | M02 | word for word |
+| `src/lib/utils.ts` | M02 | word for word |
+| `src/lib/wait.test.ts` | M02 | word for word |
+| `src/lib/wait.ts` | M02 | word for word |
+| `src/styles/contrast.ts` | M02 | word for word |
+| `src/styles/motion.ts` | M02 | word for word |
+| `src/styles/sound.test.ts` | M02 | word for word |
+| `src/styles/sound.ts` | M02 | word for word |
+| `src/types/api.ts` | M02 | word for word |
+| `src/types/archive.ts` | M02 | word for word |
+| `src/types/auth.ts` | M02 | word for word |
+| `src/types/canvas.ts` | M02 | adapted: imports `GuessInputStatus` from `@/types/guess-input` |
+| `src/types/catalog.ts` | M02 | word for word |
+| `src/types/config.ts` | M02 | word for word |
+| `src/types/countdown.ts` | M02 | word for word |
+| `src/types/duel-lobby.ts` | M02 | word for word |
+| `src/types/duel-session.ts` | M02 | word for word |
+| `src/types/duel.ts` | M02 | word for word |
+| `src/types/feedback.ts` | M02 | word for word |
+| `src/types/filters.ts` | M02 | word for word |
+| `src/types/formation.ts` | M02 | word for word |
+| `src/types/game.ts` | M02 | word for word |
+| `src/types/landing.ts` | M02 | word for word |
+| `src/types/match.ts` | M02 | word for word |
+| `src/types/play.ts` | M02 | word for word |
+| `src/types/player.ts` | M02 | word for word |
+| `src/types/pro.ts` | M02 | word for word |
+| `src/types/profile-screen.ts` | M02 | word for word |
+| `src/types/profile.ts` | M02 | word for word |
+| `src/types/query.ts` | M02 | word for word |
+| `src/types/room.ts` | M02 | word for word |
+| `src/types/solo-run.ts` | M02 | word for word |
+| `src/types/solo.ts` | M02 | word for word |
+| `src/types/sound.ts` | M02 | word for word |
+| `src/types/summary.ts` | M02 | word for word |
+| `src/types/user.ts` | M02 | word for word |
+| `vitest.config.mts` | M02 | word for word |
