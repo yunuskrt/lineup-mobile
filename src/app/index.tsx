@@ -1,15 +1,11 @@
 import React from 'react';
-import { Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Redirect } from 'expo-router';
 
 type Props = {};
 
+// M07 shows the welcome here on first launch
 const IndexScreen = ({}: Props) => {
-  return (
-    <SafeAreaView>
-      <Text>Lineup</Text>
-    </SafeAreaView>
-  );
+  return <Redirect href="/play" />;
 };
 
 export default IndexScreen;
