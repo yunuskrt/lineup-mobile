@@ -12,6 +12,8 @@ describe('policyFor', () => {
   it('drops movement and keeps information when reduced', () => {
     const runs = policyFor(true);
     expect(runs('pressShift')).toBe(false);
+    expect(runs('dialogScale')).toBe(false);
+    expect(runs('gateFade')).toBe(true);
     expect(runs('inputShake')).toBe(false);
     expect(runs('landingEntrance')).toBe(false);
     expect(runs('ringSweep')).toBe(true);
