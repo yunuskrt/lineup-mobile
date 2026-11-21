@@ -3,7 +3,8 @@
     "allow": [
       "WebSearch",
       "Edit(/.claude/skills/todo/**)",
-      "Edit(/.claude/skills/feature/**)"
+      "Edit(/.claude/skills/feature/**)",
+      "WebFetch(domain:docs.expo.dev)"
     ],
     "deny": [
       "Edit(../lineup-web/**)",

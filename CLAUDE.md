@@ -61,3 +61,4 @@ The backend runs at http://localhost:8080 and the web at http://localhost:3000. 
 - The squad is never requested, stored or logged; only revealed players arrive
 - Manual steps are mine: `.env.local` edits, starting or restarting the backend, Metro or a simulator, rebuilding the dev build, and store or account set-up. Stop, say exactly what to do, and wait, unless I tell you to do it yourself
 - After a `/code-review`, repeats, design points and out-of-scope findings become follow-up notes in the spec; don't suggest running the review again
+- **Questions to me are bilingual.** Whenever you ask me something, with `AskUserQuestion` or on your own initiative, write each question and each option in English and then in Turkish (e.g. "Recommended bundle id / Önerilen paket kimliği")
