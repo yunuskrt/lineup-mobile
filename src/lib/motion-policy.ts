@@ -5,10 +5,12 @@ import {
 } from '@/styles/motion';
 
 // Phone-only effects; motion.ts stays a word-for-word web copy
-type NativeMotionEffect = 'pressShift';
+type NativeMotionEffect = 'pressShift' | 'dialogScale' | 'sheetSlide';
 
 const NATIVE_MOTION_POLICY: Record<NativeMotionEffect, ReducedMotion> = {
   pressShift: 'drop',
+  dialogScale: 'drop',
+  sheetSlide: 'drop',
 };
 
 export type AnyMotionEffect = MotionEffect | NativeMotionEffect;

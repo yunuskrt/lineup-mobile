@@ -110,3 +110,36 @@ export const FILTER_CHIP =
 
 export const TEXT_INPUT =
   'h-12 rounded-md border-2 border-line bg-surface-card px-3 font-body text-16 text-fg';
+
+export type AlertTone = 'warning' | 'neutral';
+
+export const ALERT_TONE: Record<AlertTone, string> = {
+  warning: 'bg-warning',
+  neutral: 'bg-surface-card',
+};
+
+export type AvatarSize = 'sm' | 'default' | 'lg';
+
+export type AvatarTone = 'neutral' | 'you' | 'opponent';
+
+export const AVATAR_SIZE: Record<AvatarSize, string> = {
+  sm: 'h-8 w-8',
+  default: 'h-10 w-10',
+  lg: 'h-12 w-12',
+};
+
+export const AVATAR_LABEL: Record<AvatarSize, string> = {
+  sm: 'font-body-semibold text-12',
+  default: 'font-body-semibold text-14',
+  lg: 'font-body-semibold text-16',
+};
+
+// Fill behind initials; a duel marks the finder
+export const AVATAR_TONE: Record<AvatarTone, string> = {
+  neutral: 'bg-surface-sage',
+  you: 'bg-you',
+  opponent: 'bg-opponent',
+};
+
+export const SELECT_TRIGGER =
+  'h-12 flex-row items-center justify-between gap-2 rounded-md border-2 border-line px-3';

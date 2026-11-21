@@ -4,6 +4,7 @@ import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Play, Plus, Search, Swords, Target } from 'lucide-react-native';
 import { DevScreen, DevSection } from '@/components/dev/DevSection';
+import { SurfaceSections } from '@/components/dev/KitSurfaces';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -294,6 +295,8 @@ const KitScreen = ({}: Props) => {
       <DevSection id="entrance" title="Entrance" only={section}>
         <EntranceDemo />
       </DevSection>
+
+      <SurfaceSections only={section} />
     </DevScreen>
   );
 };

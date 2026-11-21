@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import * as kit from '@/components/ui/styles';
 import {
+  ALERT_TONE,
+  AVATAR_TONE,
   BADGE_TONE,
   BUTTON_SIZE,
   BUTTON_VARIANT,
@@ -61,13 +63,15 @@ function fillRole(className: string): string {
 }
 
 describe('kit fills', () => {
-  it.each(Object.entries({ ...BADGE_TONE, ...BUTTON_VARIANT }))(
-    '%s fills with a theme role',
-    (_, className) => {
-      expect(className).toMatch(/^bg-/);
-      expect(ROLES).toHaveProperty(fillRole(className));
-    },
-  );
+  it.each([
+    ...Object.entries(BADGE_TONE),
+    ...Object.entries(BUTTON_VARIANT),
+    ...Object.entries(ALERT_TONE),
+    ...Object.entries(AVATAR_TONE),
+  ])('%s fills with a theme role', (_, className) => {
+    expect(className).toMatch(/^bg-/);
+    expect(ROLES).toHaveProperty(fillRole(className));
+  });
 });
 
 describe('PLATE_OFFSET', () => {
