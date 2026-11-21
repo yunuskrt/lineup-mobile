@@ -16,6 +16,14 @@ function hardShadow(offset: number): ViewStyle {
   };
 }
 
+// Outset boxShadow needs Android 9 (API 28); below it, the plate
+export function canDrawBoxShadow(
+  os: string,
+  version: number | string,
+): boolean {
+  return os !== 'android' || Number(version) >= 28;
+}
+
 export const SHADOW_HARD = hardShadow(SHADOW_OFFSET.hard);
 
 export const SHADOW_HARD_SM = hardShadow(SHADOW_OFFSET['hard-sm']);

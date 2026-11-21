@@ -5,7 +5,12 @@
       "Edit(/.claude/skills/todo/**)",
       "Edit(/.claude/skills/feature/**)",
       "WebFetch(domain:docs.expo.dev)",
-      "WebFetch(domain:www.nativewind.dev)"
+      "WebFetch(domain:www.nativewind.dev)",
+      "WebFetch(domain:gorhom.dev)",
+      "WebFetch(domain:lucide.dev)",
+      "Bash(npx vitest *)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)"
     ],
     "deny": [
       "Edit(../lineup-web/**)",
