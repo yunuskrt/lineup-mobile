@@ -91,7 +91,7 @@ const ComponentName = ({}: Props) => {};
 - **JSX comments:** single-line `{/* … */}` are fine inside markup; the 75-character limit still applies.
 - Replace `ComponentName` with the actual component name.
 
-Because `type Props = {}` would otherwise be rejected by `@typescript-eslint/no-empty-object-type`, that rule is configured with `allowObjectTypes: "always"` in `eslint.config.js`. The `react-jsx` transform doesn't need `import React`, so `@typescript-eslint/no-unused-vars` ignores that one name (`varsIgnorePattern: "^React$"`). Don't "fix" the empty `Props` type or drop the `React` import to satisfy a linter — the template wins.
+Because `type Props = {}` would otherwise be rejected by `@typescript-eslint/no-empty-object-type`, that rule is configured with `allowObjectTypes: "always"` in `eslint.config.js`. The `react-jsx` transform doesn't need `import React`, so `@typescript-eslint/no-unused-vars` ignores that one name (`varsIgnorePattern: "^React$"`). `no-empty-pattern` allows the template's empty `({}: Props)` parameter (`allowObjectPatternsAsParameters: true`). Don't "fix" the empty `Props` type or drop the `React` import to satisfy a linter — the template wins.
 
 ## Expo Router
 

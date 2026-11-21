@@ -1,7 +1,5 @@
 # Current Feature
 
-<!-- Feature Name -->
-
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
@@ -19,3 +17,5 @@ Not Started
 ## History
 
 <!-- Keep this updated. Earliest to latest -->
+
+- M01 Repo & Scaffold: template cleared, dev build, scripts, ESLint rules.
