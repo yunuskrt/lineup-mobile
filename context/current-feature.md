@@ -30,3 +30,4 @@ Not Started
 - M08b Match Header: ink scoreboard, compact strip, crest and logo.
 - M09a Countdown Clock: open-arc ring, linear sweep, turn stickers.
 - M09b Lives: shirts, solo and duel lives, reconnect chip, life-lost flash.
+- M10a Guess Input: four statuses, keyboard kept up, suggestions, shake.

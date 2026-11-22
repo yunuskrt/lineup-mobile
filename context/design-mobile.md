@@ -246,6 +246,6 @@ PROFILE (tab)                        ARCHIVE (tab)
 
 ## Open questions (the user decides)
 
-1. **Keyboard on the opponent's turn.** Recommended: dismiss it, so the full board shows their reveals, and raise it on your turn. The other option keeps it up to save the raise time; M10 measures that time on both platforms.
+1. ~~Keyboard on the opponent's turn.~~ Settled in M10a: dismiss it, so the full board shows their reveals, and raise it on your turn. The raise measured about 0.2s on the Android emulator and 0.6s on the iOS Simulator (user, 2026-11-22).
 2. ~~Android below 9.~~ Settled in M04a: supported, with the plate fallback (user, 2026-11-21).
 3. ~~Plain zeros, if the slashed zero can't be switched on.~~ Settled in M03: plain zeros (user, 2026-11-21).
