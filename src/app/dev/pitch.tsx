@@ -2,10 +2,12 @@ import React from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { DevScreen, DevSection } from '@/components/dev/DevSection';
+import MatchHeader from '@/components/game/MatchHeader';
 import SquadGrid from '@/components/pitch/SquadGrid';
 import { Text } from '@/components/ui/text';
-import { samplePlayer } from '@/lib/dev/samples';
+import { SAMPLE_MATCH, samplePlayer } from '@/lib/dev/samples';
 import { slotLayout } from '@/lib/formation';
+import type { MatchInPlay } from '@/types/match';
 import type { FoundPlayer, RevealedPlayer } from '@/types/player';
 
 const FORMATIONS = [
@@ -70,6 +72,39 @@ const Specimen = ({
   );
 };
 
+const AWAY_NAMED: MatchInPlay = { ...SAMPLE_MATCH, side: 'away' };
+const NO_IMAGES: MatchInPlay = {
+  ...SAMPLE_MATCH,
+  home: { ...SAMPLE_MATCH.home, crestUrl: null },
+  away: { ...SAMPLE_MATCH.away, crestUrl: null },
+  competition: { ...SAMPLE_MATCH.competition, logoUrl: null },
+};
+
+type BoardProps = {
+  label: string;
+  match: MatchInPlay | null;
+  isCompact?: boolean;
+};
+
+// The header over the pitch, as a game board stacks them
+const Board = ({ label, match, isCompact }: BoardProps) => {
+  return (
+    <View className="gap-2">
+      <Text className="text-12 text-fg-muted">{label}</Text>
+      <View className="overflow-hidden rounded-lg border-2 border-line">
+        <MatchHeader match={match} isCompact={isCompact} hasControls />
+        <View className="h-[300px]">
+          <SquadGrid
+            formation={match?.formation ?? '4-4-2'}
+            revealed={match ? samplePlayers(match.formation, false) : []}
+            isLoading={!match}
+          />
+        </View>
+      </View>
+    </View>
+  );
+};
+
 type Props = {};
 
 // Every formation full, then each state; ?section= shows one
@@ -77,6 +112,18 @@ const PitchScreen = ({}: Props) => {
   const { section } = useLocalSearchParams<{ section?: string }>();
   return (
     <DevScreen title="Pitch">
+      <DevSection id="header" title="Match header" only={section}>
+        <Board label="Full, home side named" match={SAMPLE_MATCH} />
+        <Board label="Full, away side named" match={AWAY_NAMED} />
+        <Board
+          label="Compact, the keyboard band"
+          match={SAMPLE_MATCH}
+          isCompact
+        />
+        <Board label="No crest or logo: the fallbacks" match={NO_IMAGES} />
+        <Board label="Loading, full" match={null} />
+        <Board label="Loading, compact" match={null} isCompact />
+      </DevSection>
       <DevSection id="formations" title="Formations, full" only={section}>
         {FORMATIONS.map((formation) => (
           <Specimen
