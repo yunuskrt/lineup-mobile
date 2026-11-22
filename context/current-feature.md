@@ -24,3 +24,4 @@ Not Started
 - M04a Press & Controls: press plate, ShadowBox, 8 controls, /dev/kit.
 - M04b Surfaces & Overlays: alert, empty, avatar, skeleton, dialog, sheet.
 - M05 App Shell & Navigation: tabs, screen frame, game stack, 404, splash.
+- M06 API Client & Session: copy list B, bearer token, SecureStore, Query.
