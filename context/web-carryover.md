@@ -189,3 +189,12 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | `src/lib/api/http/transport.ts` | M06 | adapted: no `credentials`; sends `Authorization: Bearer` from the token store; stores a `set-auth-token` header |
 | `src/lib/api/pro-switch.test.ts` | M06 | word for word |
 | `src/lib/api/pro-switch.ts` | M06 | adapted: `isProSwitchOff` removed (a Next.js server fetch); `isSwitchOffIn` kept |
+
+## Single files (later phases)
+
+Pasted by hand outside a copy list, when a phase needed them.
+
+| File | Phase | State |
+| --- | --- | --- |
+| `src/lib/landing-demo.test.ts` | M11c | adapted: the showcase is `SAMPLE_SHOWCASE` from `src/lib/dev/welcome-states.ts`, not the web's mock overview |
+| `src/lib/landing.test.ts` | M11c | adapted: the overview is `SAMPLE_OVERVIEW` from `src/lib/dev/welcome-states.ts`, not the web's mock; the caption's date is the sample's 25 May 2005 |

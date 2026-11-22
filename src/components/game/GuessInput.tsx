@@ -62,6 +62,8 @@ type Props = {
   header?: ReactNode;
   // The band drops the visible label for room; the field keeps its name
   hasLabel?: boolean;
+  // Set by the Welcome's demo: no focus, no touches; it highlights a row
+  drivenHighlight?: string | null;
 };
 
 const GuessInput = ({
@@ -76,6 +78,7 @@ const GuessInput = ({
   onListOpenChange,
   header,
   hasLabel = true,
+  drivenHighlight,
 }: Props) => {
   const inputRef = useRef<TextInputInstance>(null);
   const runs = useMotionPolicy();
@@ -84,13 +87,17 @@ const GuessInput = ({
   const [isFocused, setIsFocused] = useState(false);
   // A sent guess closes the list until the text changes
   const [isDismissed, setIsDismissed] = useState(false);
+  const isDriven = drivenHighlight !== undefined;
   const isListOpen =
-    isLive && isFocused && !isDismissed && suggestions.length > 0;
+    isLive &&
+    (isDriven || (isFocused && !isDismissed)) &&
+    suggestions.length > 0;
 
   useEffect(() => {
+    if (isDriven) return;
     if (!canFocus) inputRef.current?.blur();
     else if (isLive) inputRef.current?.focus();
-  }, [isLive, canFocus]);
+  }, [isLive, canFocus, isDriven]);
 
   // Before layout events arrive, so the board never sizes to the list
   useLayoutEffect(() => {
@@ -99,20 +106,23 @@ const GuessInput = ({
     return () => onListOpenChange?.(false);
   }, [isListOpen, onListOpenChange]);
 
+  // A driven field is presentation: it never speaks
   useEffect(() => {
-    if (!isListOpen) return;
+    if (!isListOpen || isDriven) return;
     AccessibilityInfo.announceForAccessibility(
       suggestionCountLabel(suggestions.length),
     );
-  }, [isListOpen, suggestions.length]);
+  }, [isListOpen, isDriven, suggestions.length]);
 
   // Read once per lockout
   useEffect(() => {
-    if (status !== 'cooldown' || cooldownUntil === undefined) return;
+    if (isDriven || status !== 'cooldown' || cooldownUntil === undefined) {
+      return;
+    }
     AccessibilityInfo.announceForAccessibility(
       cooldownAnnouncement(cooldownUntil - Date.now()),
     );
-  }, [status, cooldownUntil]);
+  }, [status, cooldownUntil, isDriven]);
 
   function send(text: string) {
     const guess = prepareGuess(text);
@@ -135,9 +145,13 @@ const GuessInput = ({
   }
 
   return (
-    <View className="gap-2">
+    <View pointerEvents={isDriven ? 'none' : 'auto'} className="gap-2">
       {isListOpen ? (
-        <SuggestionList suggestions={suggestions} onPick={pick} />
+        <SuggestionList
+          suggestions={suggestions}
+          onPick={pick}
+          highlightedKey={drivenHighlight ?? null}
+        />
       ) : null}
       {header}
       {hasLabel ? (
@@ -162,6 +176,7 @@ const GuessInput = ({
             onSubmitEditing={() => {
               if (isLive) send(value);
             }}
+            editable={!isDriven}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             submitBehavior="submit"

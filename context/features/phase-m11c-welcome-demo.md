@@ -80,4 +80,41 @@ No copy list. The web's `WindowBar` (a browser window's dots) isn't carried: it 
     - with no showcase there's no frame;
     - at 375pt it's the pitch alone.
 
+- **Deviations recorded during implementation:**
+  - **The Welcome didn't read the catalog overview yet** (the spec said it did). It now calls `useCatalogOverview` and passes the showcase to the frame, under a second rule below the rules row.
+  - **New helper:** `src/lib/demo-view.ts` (`isHalfInView`, with tests). It's the native stand-in for the web's `useInView` at half. The Welcome keeps the scroll position and the frame's layout in refs, and re-renders only when the answer flips.
+  - **`use-demo-playback`:**
+    - the web's rAF loop, with `isInView` passed in by whoever holds the scroll view;
+    - the app's state comes from `AppState` through `useSyncExternalStore`, and "unknown" at launch counts as shown;
+    - screen focus comes from `useIsFocused`.
+  - **The driven `GuessInput`** (`drivenHighlight`):
+    - it isn't editable and takes no touches (`pointerEvents="none"`);
+    - it never focuses and never announces anything;
+    - its list opens without focus, and `SuggestionList` gained `highlightedKey`, a brand fill as on web.
+  - **The frame never changes height:**
+    - the input area keeps room for one suggestion row (`min-h-[120px]`);
+    - the toast sits in that space, as the toast and the row never show together;
+    - before this, each suggestion pushed the frame and caption down about 50pt.
+  - **The caption speaks for the hidden stage:** its text carries `showcaseSentence` as its screen-reader label. The figure isn't one accessible element, as that would swallow the Pause control on iOS.
+  - **The stage** uses the compact scoreboard, has no visible input label, and keeps the web's tilted "Demo" sticker. The control is a kit secondary button, "Pause" or "Play".
+  - **Dev states:** `src/lib/dev/welcome-states.ts` (with tests) builds `SAMPLE_SHOWCASE` from the dev samples, checked against `showcaseSchema`. `frozen` is worked out from the timeline: the first suggestion row, highlighted.
+  - **The pending spinner keeps turning while paused,** as the web's CSS spin does. Everything else stops where it was.
+  - **The web's landing tests, pasted by you, adapted:** `landing-demo.test.ts` and `landing.test.ts` read `SAMPLE_SHOWCASE` and a new static `SAMPLE_OVERVIEW` (`src/lib/dev/welcome-states.ts`), not the web's mock overview, which this repo doesn't carry. The sample showcase now reveals eight, as the web's tests expect, and the caption's date is the sample's. Both are recorded in `context/web-carryover.md`, and the overview is checked against `catalogOverviewSchema`.
+- **Verified on Android:**
+  - **`/dev/welcome`:**
+    - `ready` types "Tavinho", reveals him (1/11), then a second player. "Marco Bellandi" stays in the field with "Not in this XI" in the reserved space, and the loop goes on;
+    - `frozen` shows "Tav" with the Tavinho row highlighted, and no control;
+    - Pause stops it mid-step and shows "Play", and Play resumes it;
+    - `still` shows six filled slots and no control (eight since the tests were adapted);
+    - `loading` shows the skeleton stage and caption;
+    - `no-showcase` shows no frame.
+  - **The real Welcome**, its showcase from the backend (RMA 2–3 BAR, LaLiga 2017), seen through a scratch route that rendered it while signed in. The route and a sample fallback were removed after:
+    - below the fold, two captures were identical (stopped);
+    - scrolled into view it plays, with Cristiano Ronaldo's row highlighted and his headshot;
+    - the app sent to the background and brought back still plays;
+    - scrolled back with less than half on screen, it stops;
+    - the keyboard never rose (`mInputShown=false`).
+- **Verified by the user on iOS (2026-11-22):** the real Welcome's demo (the loop, stopping off screen and resuming, the background, Pause and Play, no keyboard), every `/dev/welcome` state, the still frame under Reduce Motion, and the pitch-only frame on an iPhone SE simulator.
+- **Checks:** all pass. `npm run lint` keeps its one warning from Expo's generated `.expo/types/router.d.ts`.
+
 ## History

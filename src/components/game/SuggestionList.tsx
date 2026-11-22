@@ -14,10 +14,16 @@ const HEADSHOT_DIAMETER = 32;
 type Props = {
   suggestions: readonly Suggestion[];
   onPick: (suggestion: Suggestion) => void;
+  // The demo's driven row, picked out in the brand fill
+  highlightedKey?: string | null;
 };
 
 // A typing aid only: a pick is sent as plain text, the server decides
-const SuggestionList = ({ suggestions, onPick }: Props) => {
+const SuggestionList = ({
+  suggestions,
+  onPick,
+  highlightedKey = null,
+}: Props) => {
   const { height } = useWindowDimensions();
 
   return (
@@ -33,6 +39,7 @@ const SuggestionList = ({ suggestions, onPick }: Props) => {
         {suggestions.map((suggestion, index) => {
           const { player, isNamed } = suggestion;
           const isLast = index === suggestions.length - 1;
+          const isHighlighted = player.key === highlightedKey;
           return (
             <Pressable
               key={player.key}
@@ -47,6 +54,7 @@ const SuggestionList = ({ suggestions, onPick }: Props) => {
               className={cn(
                 'min-h-11 flex-row items-center gap-3 px-3 active:bg-surface-raised',
                 !isLast && 'border-b-2 border-rule',
+                isHighlighted && 'bg-brand',
               )}
             >
               <PlayerHeadshot
