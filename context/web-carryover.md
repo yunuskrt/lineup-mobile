@@ -200,7 +200,7 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | `src/lib/sound/preference.ts` | M12a | adapted: `configureSoundStorage` replaces `browserStorage()` (`localStorage`) |
 | `src/lib/sound/render.test.ts` | M12a | adapted: vibrato is checked as a frequency curve, plus a curve that glides |
 | `src/lib/sound/render.ts` | M12a | adapted: vibrato is drawn as a `setValueCurveAtTime` frequency curve, as `react-native-audio-api` 1.0.1 aborts when a node is connected to an `AudioParam` |
-| `src/hooks/use-game-sounds.ts` | M12a | adapted: no `'use client'`; a `requestAnimationFrame` loop, run only while the ring runs, replaces motion's `useAnimationFrame` |
+| `src/hooks/use-game-sounds.ts` | M12a, M12b | adapted: no `'use client'`; a `requestAnimationFrame` loop, run only while the ring runs, replaces motion's `useAnimationFrame`. M12b: each event cue fires its haptic (`cueHaptic`) beside `play`, as the mute leaves haptics on |
 | `src/hooks/use-sound.ts` | M12a | adapted: no `'use client'` and no server snapshot |
 
 ## Single files (later phases)
