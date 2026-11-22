@@ -1,10 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { DevScreen, DevSection } from '@/components/dev/DevSection';
 import SoundToggle from '@/components/game/SoundToggle';
 import { Button } from '@/components/ui/button';
+import { FilterChip } from '@/components/ui/filter-chip';
 import { Text } from '@/components/ui/text';
 import { useSound } from '@/hooks/use-sound';
+import { CUE_HAPTICS } from '@/lib/cue-haptics';
+import { cueHaptic } from '@/lib/haptics';
 import {
   FINAL_BEEP_FROM,
   finalBeepFor,
@@ -41,12 +44,19 @@ type Props = {};
 // The web's SoundPreview: every cue and the clock, one tap each
 const SoundScreen = ({}: Props) => {
   const { play } = useSound();
+  const [isHapticOn, setIsHapticOn] = useState(true);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     const pending = timers.current;
     return () => pending.forEach(clearTimeout);
   }, []);
+
+  // As the board does: the haptic first, then the sound
+  function playCue(cue: SoundCue) {
+    if (isHapticOn) cueHaptic(cue);
+    play(cue);
+  }
 
   function playBeep(seconds: number) {
     const beep = finalBeepFor(seconds);
@@ -91,16 +101,31 @@ const SoundScreen = ({}: Props) => {
         </View>
       </DevSection>
       <DevSection id="cues" title="Cues">
+        <View className="flex-row items-center gap-3">
+          <FilterChip
+            label="Play with haptic"
+            isOn={isHapticOn}
+            onPress={() => setIsHapticOn((isOn) => !isOn)}
+          />
+          <Text className="min-w-0 flex-1 text-12 text-fg-muted">
+            Felt on a real phone only. The mute leaves haptics on.
+          </Text>
+        </View>
         <View className="border-t-2 border-line">
           {CUE_EVENTS.map(({ cue, event }) => (
             <Pressable
               key={cue}
               accessibilityRole="button"
               accessibilityLabel={`${cue}: ${event}`}
-              onPress={() => play(cue)}
+              onPress={() => playCue(cue)}
               className="min-h-11 gap-0.5 border-b-2 border-line py-3 active:bg-surface-raised"
             >
-              <Text className="font-body-semibold text-14">{cue}</Text>
+              <View className="flex-row items-center justify-between gap-3">
+                <Text className="font-body-semibold text-14">{cue}</Text>
+                <Text className="text-12 text-fg-muted">
+                  {CUE_HAPTICS[cue] ?? 'no haptic'}
+                </Text>
+              </View>
               <Text className="text-12 text-fg-muted">{event}</Text>
             </Pressable>
           ))}

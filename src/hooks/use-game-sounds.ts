@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useSound } from '@/hooks/use-sound';
 import { activeRing } from '@/lib/canvas';
 import { displaySeconds, remainingMs } from '@/lib/countdown';
+import { cueHaptic } from '@/lib/haptics';
 import { serverClock } from '@/lib/server-clock';
 import {
   heardClockCue,
@@ -10,7 +11,7 @@ import {
   soundCuesFor,
 } from '@/lib/sound-cues';
 import type { CanvasView } from '@/types/canvas';
-import type { HeardSecond } from '@/types/sound';
+import type { HeardSecond, SoundCue } from '@/types/sound';
 
 function useEventSounds(view: CanvasView) {
   const { play } = useSound();
@@ -24,6 +25,11 @@ function useEventSounds(view: CanvasView) {
     // The first view is a load or a resume
     if (!last) return;
 
+    // The haptic skips the mute: the phone's own setting governs it
+    const fire = (cue: SoundCue) => {
+      cueHaptic(cue);
+      play(cue);
+    };
     const now = performance.now();
     const cues = scheduleCues(
       soundCuesFor(last, view),
@@ -32,12 +38,12 @@ function useEventSounds(view: CanvasView) {
     for (const { cue, delayMs } of cues) {
       if (!isLateCue(cue)) lastEventCueAt.current = now;
       if (delayMs === 0) {
-        play(cue);
+        fire(cue);
         continue;
       }
       const timer = setTimeout(() => {
         timers.current.delete(timer);
-        play(cue);
+        fire(cue);
       }, delayMs);
       timers.current.add(timer);
     }
