@@ -3,10 +3,12 @@ import DuelLivesCard from '@/components/game/DuelLivesCard';
 import LivesCard from '@/components/game/LivesCard';
 import type { CanvasView } from '@/types/canvas';
 
-type Props = { view: CanvasView };
+type Props = { view: CanvasView; isCompact?: boolean };
 
-const RailLives = ({ view }: Props) => {
-  if (view.mode === 'solo') return <LivesCard lives={view.lives} />;
+const RailLives = ({ view, isCompact = false }: Props) => {
+  if (view.mode === 'solo') {
+    return <LivesCard lives={view.lives} isCompact={isCompact} />;
+  }
 
   return (
     <DuelLivesCard
@@ -14,6 +16,7 @@ const RailLives = ({ view }: Props) => {
       opponent={view.opponent}
       turn={view.turn}
       opponentConnection={view.opponentConnection}
+      isCompact={isCompact}
     />
   );
 };

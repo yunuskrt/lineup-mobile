@@ -1,5 +1,15 @@
-import React, { type ReactNode, useDeferredValue, useMemo } from 'react';
-import { KeyboardAvoidingView, useWindowDimensions, View } from 'react-native';
+import React, {
+  type ReactNode,
+  useDeferredValue,
+  useMemo,
+  useState,
+} from 'react';
+import {
+  type LayoutChangeEvent,
+  Platform,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useIsFocused } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { CircleAlert, Hammer, WifiOff } from 'lucide-react-native';
@@ -17,6 +27,7 @@ import QuitChip from '@/components/shell/QuitChip';
 import StateNotice from '@/components/shell/StateNotice';
 import { Alert } from '@/components/ui/alert';
 import { IconTile } from '@/components/ui/icon-tile';
+import { useKeyboardFrame } from '@/hooks/use-keyboard-frame';
 import {
   gateSize,
   laterGatePart,
@@ -24,6 +35,7 @@ import {
   laterRailPart,
 } from '@/lib/canvas-parts';
 import { LOADING_FORMATION } from '@/lib/formation';
+import { bandLift } from '@/lib/keyboard-band';
 import { suggest, type SuggestionIndex } from '@/lib/suggestions';
 import { missedOnPitch } from '@/lib/summary';
 import { cn } from '@/lib/utils';
@@ -98,6 +110,10 @@ const GameCanvas = ({
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
   const isShort = isShortScreen(useWindowDimensions().height);
+  const keyboard = useKeyboardFrame();
+  // The band's height with no list open; the list floats over the turf
+  const [bandHeight, setBandHeight] = useState(0);
+  const [isListOpen, setIsListOpen] = useState(false);
   const soloEnd = view.mode === 'solo' ? view.end : null;
   const result = view.mode === 'duel' ? view.end : null;
   const summary = soloEnd?.status === 'ready' ? soloEnd.summary : null;
@@ -106,6 +122,10 @@ const GameCanvas = ({
   const hasQuit = summary === null && result === null;
   const found = result?.found ?? view.found;
   const railPart = laterRailPart(view);
+  const isBand = keyboard.isShown && railPart === null;
+  const isCompact = isShort || isBand;
+  // In the flow until measured, then over the turf with its room held
+  const isFloating = isBand && bandHeight > 0;
   const gatePart = laterGatePart(view);
   const notice = noticeParts(view.gate);
   const query = useDeferredValue(guess);
@@ -120,6 +140,10 @@ const GameCanvas = ({
     [directory, query, namedKeys],
   );
 
+  function measureBand(event: LayoutChangeEvent) {
+    if (!isListOpen) setBandHeight(event.nativeEvent.layout.height);
+  }
+
   return (
     <View className="flex-1 bg-surface">
       {/* Light over the ink only while the board is the screen in view */}
@@ -133,7 +157,7 @@ const GameCanvas = ({
           style={{ paddingTop: insets.top }}
         >
           <View
-            className={cn('justify-center px-0.5', isShort ? 'h-11' : 'h-28')}
+            className={cn('justify-center px-0.5', isCompact ? 'h-11' : 'h-28')}
           >
             <QuitChip onQuit={onQuit} isOnScoreboard />
           </View>
@@ -156,49 +180,88 @@ const GameCanvas = ({
           ) : undefined
         }
       >
-        {/* Until M11b's band: padding keeps the input above the keyboard */}
-        <KeyboardAvoidingView behavior="padding" className="flex-1">
+        <View
+          className="flex-1"
+          // Edge to edge the window never resizes: the band sits on the keys
+          style={{
+            paddingBottom: isBand
+              ? bandLift(Platform.OS, keyboard.height, insets.bottom)
+              : 0,
+          }}
+        >
           <View
             className="border-b-2 border-line bg-scoreboard"
             // The scoreboard runs up under the status bar
             style={{ paddingTop: insets.top }}
           >
-            <MatchHeader match={view.match} isCompact={isShort} hasControls />
+            <MatchHeader match={view.match} isCompact={isCompact} hasControls />
           </View>
-          <View className="flex-1 bg-turf p-2">
-            {view.match ? <FoundCount found={found} /> : null}
-            <SquadGrid
-              formation={view.match?.formation ?? LOADING_FORMATION}
-              revealed={found}
-              missed={missedOnPitch(soloEnd)}
-              pulse={view.pulse}
-              isLoading={view.match === null}
-            />
-            {isPerfectClear ? (
+          <View className="flex-1">
+            <View className="flex-1 bg-turf p-2">
+              {view.match ? <FoundCount found={found} /> : null}
+              <SquadGrid
+                formation={view.match?.formation ?? LOADING_FORMATION}
+                revealed={found}
+                missed={missedOnPitch(soloEnd)}
+                pulse={view.pulse}
+                isLoading={view.match === null}
+              />
+              {isPerfectClear ? (
+                <View
+                  pointerEvents="none"
+                  className="absolute inset-0 border-4 border-found"
+                />
+              ) : null}
+            </View>
+            {/* Holds the band's room, so a list opening never moves the turf */}
+            {isFloating ? (
               <View
-                pointerEvents="none"
-                className="absolute inset-0 border-4 border-found"
+                // The band's measured height, known only at run time
+                style={{ height: bandHeight }}
               />
             ) : null}
+            <View
+              onLayout={isBand ? measureBand : undefined}
+              className={
+                isFloating
+                  ? 'absolute inset-x-0 bottom-0 border-t-2 border-transparent px-4 py-2'
+                  : isBand
+                    ? 'border-t-2 border-line bg-surface px-4 py-2'
+                    : 'border-t-2 border-line bg-surface px-4 pt-3'
+              }
+              // The home indicator's inset is known only at run time
+              style={
+                isBand
+                  ? undefined
+                  : { paddingBottom: insets.bottom + RAIL_BOTTOM_GAP }
+              }
+            >
+              {/* The band's face stays its own height as the list opens */}
+              {isFloating ? (
+                <View
+                  pointerEvents="none"
+                  className="absolute inset-x-0 bottom-0 border-t-2 border-line bg-surface"
+                  // The band's measured height, known only at run time
+                  style={{ height: bandHeight }}
+                />
+              ) : null}
+              {railPart ? (
+                laterNotice(railPart)
+              ) : (
+                <ActiveRail
+                  view={view}
+                  guess={guess}
+                  suggestions={suggestions}
+                  onGuessChange={onGuessChange}
+                  onGuessSubmit={onGuessSubmit}
+                  isBand={isBand}
+                  canFocus={view.gate === null}
+                  onListOpenChange={setIsListOpen}
+                />
+              )}
+            </View>
           </View>
-          <View
-            className="border-t-2 border-line bg-surface px-4 pt-3"
-            // The home indicator's inset is known only at run time
-            style={{ paddingBottom: insets.bottom + RAIL_BOTTOM_GAP }}
-          >
-            {railPart ? (
-              laterNotice(railPart)
-            ) : (
-              <ActiveRail
-                view={view}
-                guess={guess}
-                suggestions={suggestions}
-                onGuessChange={onGuessChange}
-                onGuessSubmit={onGuessSubmit}
-              />
-            )}
-          </View>
-        </KeyboardAvoidingView>
+        </View>
       </CanvasGate>
       <LifeLostFlash flashKey={view.lifeLostKey} />
     </View>

@@ -15,6 +15,8 @@ type Props = {
   opponent: DuelPlayer | null;
   turn: DuelActor | null;
   opponentConnection?: ConnectionState | null;
+  // The keyboard band's one row
+  isCompact?: boolean;
 };
 
 const DuelLivesCard = ({
@@ -22,6 +24,7 @@ const DuelLivesCard = ({
   opponent,
   turn,
   opponentConnection = null,
+  isCompact = false,
 }: Props) => {
   const players: Record<DuelActor, DuelPlayer | null> = { you, opponent };
   const { shown, setPeek } = useShownActor(turn, {
@@ -35,6 +38,7 @@ const DuelLivesCard = ({
 
   return (
     <CardFrame
+      isCompact={isCompact}
       chip={
         reconnectDeadline !== null ? (
           <ReconnectChip deadline={reconnectDeadline} />
@@ -69,6 +73,7 @@ const DuelLivesCard = ({
               player={player}
               isShown={actor === shown}
               isOverlay={actor === 'opponent'}
+              isCompact={isCompact}
             />
           );
         })}
