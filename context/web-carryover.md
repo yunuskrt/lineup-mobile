@@ -80,7 +80,7 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | `src/lib/feedback.test.ts` | M02 | word for word |
 | `src/lib/feedback.ts` | M02 | word for word |
 | `src/lib/filters.test.ts` | M02 | word for word |
-| `src/lib/filters.ts` | M02 | word for word. **Browser-only:** `replaceQuery` uses `window.history`; M13 replaces it with Expo Router |
+| `src/lib/filters.ts` | M02, M13a | adapted (M13a): `replaceQuery` (`window.history`) removed; screens write their params with `router.setParams` through `src/lib/route-params.ts` |
 | `src/lib/formation.test.ts` | M02 | word for word |
 | `src/lib/formation.ts` | M02 | word for word |
 | `src/lib/guess.test.ts` | M02 | word for word |

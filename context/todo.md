@@ -38,7 +38,7 @@ This todo file is for developer-side use.
 
 ## Part 3 — Screens
 
-- [ ] **Phase M13 — Play Setup**: `/play` steps (Mode, Filters, Start), Practice card, club search, runs-left line, join by code, Create room.
+- [ ] 🟡 **Phase M13 — Play Setup**: `/play` steps (Mode, Filters, Start), Practice card, club search, runs-left line, join by code, Create room. — partially done: M13b filters, M13c start and rooms left
 - [ ] **Phase M14 — Solo Run**: Side pick, 15s server-clock loop, quit dialog, lost-run, cap and picked-match gates, practice runs. (copy list D)
 - [ ] **Phase M15 — Run Summary**: Summary sections, results table, missed reveal for Pro, Play again, Play a duel, Practise again.
 - [ ] **Phase M16 — Socket Client**: Token handshake, protocol gate, takeover, reconnects, app background and foreground. (copy list E)

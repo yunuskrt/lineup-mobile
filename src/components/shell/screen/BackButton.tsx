@@ -5,13 +5,16 @@ import { ChevronLeft } from 'lucide-react-native';
 import { pressHaptic } from '@/lib/haptics';
 import { ROLES } from '@/styles/tokens';
 
-type Props = {};
+type Props = {
+  // A step back inside the screen; else the stack's
+  onPress?: () => void;
+};
 
 // A plain chevron in a 44pt target; the web ruled out the arrow tile
-const BackButton = ({}: Props) => {
+const BackButton = ({ onPress }: Props) => {
   return (
     <Pressable
-      onPress={() => router.back()}
+      onPress={onPress ?? (() => router.back())}
       onPressIn={pressHaptic}
       accessibilityRole="button"
       accessibilityLabel="Back"

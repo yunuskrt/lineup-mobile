@@ -1,4 +1,5 @@
 import React, { type ReactNode } from 'react';
+import type { AccessibilityRole } from 'react-native';
 import { PressableFace } from '@/components/ui/pressable-face';
 import { CHOICE_TILE } from '@/components/ui/styles';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,8 @@ type Props = {
   // Flat while busy, as on web
   isBusy?: boolean;
   accessibilityLabel?: string;
+  // A radio in a group, such as the mode cards; a button by default
+  accessibilityRole?: AccessibilityRole;
   isPressedPreview?: boolean;
 };
 
@@ -23,8 +26,10 @@ export const ChoiceTile = ({
   isDisabled = false,
   isBusy = false,
   accessibilityLabel,
+  accessibilityRole = 'button',
   isPressedPreview,
 }: Props) => {
+  const isRadio = accessibilityRole === 'radio';
   return (
     <PressableFace
       onPress={onPress}
@@ -32,7 +37,10 @@ export const ChoiceTile = ({
       isBusy={isBusy}
       isPressedPreview={isPressedPreview}
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ selected: isSelected }}
+      accessibilityRole={accessibilityRole}
+      accessibilityState={
+        isRadio ? { checked: isSelected } : { selected: isSelected }
+      }
       className={cn(CHOICE_TILE, isSelected ? 'bg-brand' : 'bg-surface-card')}
     >
       {children}
