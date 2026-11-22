@@ -1,6 +1,7 @@
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode, useEffect } from 'react';
 import { KeyboardAvoidingView, View } from 'react-native';
 import Animated, {
+  useAnimatedRef,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
@@ -18,12 +19,16 @@ type Props = {
   children: ReactNode;
   // Pushed screens get a back chevron
   canGoBack?: boolean;
+  // The chevron's own action, such as a step back
+  onBack?: () => void;
   // A control at the bar's right end, such as Quit
   headerAction?: ReactNode;
   // Tab screens leave the bottom edge to the tab bar
   hasTabBar?: boolean;
   // Forms: the column rises above the keyboard, taps still land
   avoidsKeyboard?: boolean;
+  // A change scrolls the column back to the top
+  scrollResetKey?: string;
 };
 
 // A ruled column under a large title that collapses into a bar
@@ -31,13 +36,20 @@ const Screen = ({
   title,
   children,
   canGoBack = false,
+  onBack,
   headerAction,
   hasTabBar = false,
   avoidsKeyboard = false,
+  scrollResetKey,
 }: Props) => {
   const insets = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
   const titleHeight = useSharedValue(0);
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [scrollRef, scrollResetKey]);
 
   const onScroll = useAnimatedScrollHandler((event) => {
     scrollY.set(event.contentOffset.y);
@@ -55,7 +67,11 @@ const Screen = ({
         style={{ paddingTop: insets.top }}
       >
         <View className="h-11 flex-row items-center gap-2 px-2">
-          {canGoBack ? <BackButton /> : <View className="w-2" />}
+          {canGoBack ? (
+            <BackButton onPress={onBack} />
+          ) : (
+            <View className="w-2" />
+          )}
           <Animated.View
             accessibilityElementsHidden
             importantForAccessibility="no-hide-descendants"
@@ -82,6 +98,7 @@ const Screen = ({
         className="flex-1"
       >
         <Animated.ScrollView
+          ref={scrollRef}
           onScroll={onScroll}
           scrollEventThrottle={16}
           keyboardShouldPersistTaps="handled"
