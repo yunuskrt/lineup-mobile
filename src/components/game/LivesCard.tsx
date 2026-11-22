@@ -3,12 +3,12 @@ import CardFrame from '@/components/game/CardFrame';
 import Tally from '@/components/game/Tally';
 import type { Lives as LivesCount } from '@/types/game';
 
-type Props = { lives: LivesCount };
+type Props = { lives: LivesCount; isCompact?: boolean };
 
-const LivesCard = ({ lives }: Props) => {
+const LivesCard = ({ lives, isCompact = false }: Props) => {
   return (
-    <CardFrame>
-      <Tally lives={lives} />
+    <CardFrame isCompact={isCompact}>
+      <Tally lives={lives} isCompact={isCompact} />
     </CardFrame>
   );
 };

@@ -33,3 +33,4 @@ Not Started
 - M10a Guess Input: four statuses, keyboard kept up, suggestions, shake.
 - M10b Feedback & Reveal: verdict toast, reveal card, pulse, grid wiring.
 - M11a Board & Gate: game board, rail, gate overlay, /dev/canvas, loading.
+- M11b Keyboard Band: band on the keys, list over turf, turn drops keys.

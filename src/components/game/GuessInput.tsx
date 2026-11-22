@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   AccessibilityInfo,
   TextInput,
@@ -48,6 +54,14 @@ type Props = {
   shakeKey: number;
   // Typing aid only; a pick is a plain text guess
   suggestions?: readonly Suggestion[];
+  // False under a gate: no focus; true again refocuses a live field
+  canFocus?: boolean;
+  // The board keeps its layout while the list floats over the turf
+  onListOpenChange?: (isOpen: boolean) => void;
+  // Between the list and the field: the band's clock row stays put
+  header?: ReactNode;
+  // The band drops the visible label for room; the field keeps its name
+  hasLabel?: boolean;
 };
 
 const GuessInput = ({
@@ -58,6 +72,10 @@ const GuessInput = ({
   onSubmit,
   shakeKey,
   suggestions = NO_SUGGESTIONS,
+  canFocus = true,
+  onListOpenChange,
+  header,
+  hasLabel = true,
 }: Props) => {
   const inputRef = useRef<TextInputInstance>(null);
   const runs = useMotionPolicy();
@@ -70,8 +88,16 @@ const GuessInput = ({
     isLive && isFocused && !isDismissed && suggestions.length > 0;
 
   useEffect(() => {
-    if (isLive) inputRef.current?.focus();
-  }, [isLive]);
+    if (!canFocus) inputRef.current?.blur();
+    else if (isLive) inputRef.current?.focus();
+  }, [isLive, canFocus]);
+
+  // Before layout events arrive, so the board never sizes to the list
+  useLayoutEffect(() => {
+    onListOpenChange?.(isListOpen);
+    // A field that unmounts mid-list (a pick ends the turn) has no list
+    return () => onListOpenChange?.(false);
+  }, [isListOpen, onListOpenChange]);
 
   useEffect(() => {
     if (!isListOpen) return;
@@ -113,13 +139,16 @@ const GuessInput = ({
       {isListOpen ? (
         <SuggestionList suggestions={suggestions} onPick={pick} />
       ) : null}
-      <Text
-        accessibilityElementsHidden
-        importantForAccessibility="no"
-        className={SECTION_LABEL}
-      >
-        Guess a player
-      </Text>
+      {header}
+      {hasLabel ? (
+        <Text
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+          className={SECTION_LABEL}
+        >
+          Guess a player
+        </Text>
+      ) : null}
       <ShakeFrame shakeKey={shakeKey}>
         <View
           className="rounded-md"

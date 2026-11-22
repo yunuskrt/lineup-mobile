@@ -87,4 +87,57 @@ Most of this phase has no web counterpart: the band is phone-only, so `design-mo
     - a peek-dot tap leaves the keyboard up;
     - the board fits at 375pt.
 
+- **Deviations recorded during implementation:**
+  - **The hook is `src/hooks/use-keyboard-frame.ts`** (`useKeyboardFrame`).
+  - **New helper:** `src/lib/keyboard-band.ts` (`bandLift`, with tests). On Android, React Native's keyboard height leaves out the navigation bar, so the band was one bar too low; Android adds the bottom inset. iOS measures from the screen's edge and is used as is.
+  - **The band's row goes inside `GuessInput`,** through a new `header` prop, under its list. With the row above the input instead, an opening list pushed the clock and lives up over the turf. `GuessInput` also gained three props:
+    - `onListOpenChange` (from a layout effect), so the board can hold the band's room;
+    - `canFocus`, false under a gate; it refocuses a live field when the gate closes;
+    - `hasLabel`: the band drops the visible "Guess a player" label for 24pt of pitch. The field keeps its screen-reader name, and the placeholder says it on screen.
+  - **How the band floats:**
+    - it's bottom-anchored over the turf, with a spacer holding its height with no list open, so the list grows up over the turf and the pitch never moves;
+    - its cream face is a separate layer of that height;
+    - until it's measured it sits in the flow, so its first frame doesn't overlap the pitch.
+  - **Compact lives:**
+    - `isCompact` on `LivesCard`, `DuelLivesCard`, `CardFrame`, `PlayerLayer` and `Tally`: one row, no "Lives" header, a 20pt count and small shirts;
+    - in a duel it drops the player sticker and handle row;
+    - the shirts' screen-reader label names the player instead ("Opponent: 3 of 3 lives left", `Lives` `whose`), and the peek dots' order and colour show it on screen.
+  - **Practice in the band is the input alone:** the Practice card has no clock or lives to shrink, and its text would cost the pitch.
+  - **No `keyboardShouldPersistTaps`:** the board has no scroll view, so no tap on it blurs the field. The peek dot was checked with the keyboard up.
+  - **Refocus on your turn needed no `GuessInput` change:** on their turn the field is unmounted, and on yours it mounts live and focuses itself. `canFocus` covers the gate case, where the field stays mounted.
+  - **The toast floats just above the band** (absolute), not in a slot inside it.
+  - **"Pass the turn" sits on the turf's top-right:** Expo's dev-menu bubble covers the scoreboard's right end, where it was first placed, and swallowed the tap.
+  - **Found in review:** a field unmounting with its list open (a pick that ends the turn) never reported the list closed, so the board stopped re-measuring the band. The layout effect's cleanup now reports it closed.
+- **Verified on Android** (soft keyboard switched on for the test, then back off):
+  - **Solo `idle` with the keyboard up:**
+    - the band sits right on the keys;
+    - the scoreboard is the strip, and all eleven slots show on a smaller pitch;
+    - one row holds the 56pt clock and the lives.
+  - **Suggestions:**
+    - "har" opens three rows over the turf, above the whole band, and the pitch doesn't move;
+    - tapping "Dean Harlow" fills the field, and the keyboard stays up.
+  - **Duel `idle`:**
+    - the band row holds the clock, the lives, the two peek dots and "Your turn";
+    - tapping the opponent's dot shows their orange shirts, and the keyboard stays up (`mInputShown=true`).
+  - **The handover:**
+    - "Pass the turn" drops the keyboard (`mInputShown=false`) and shows the full board, with the orange clock, "Their turn" and the waiting line;
+    - passing it back raises the keyboard with the field focused and the band in place.
+  - **Other states:**
+    - `not-in-xi` shows its toast just above the band;
+    - `pre-match`: Start closes the gate, and the keyboard rises with the band;
+    - solo `life-lost` keeps the band through locked and back to live, with lives at 1 and a new clock;
+    - `practice` shows the input alone;
+    - the band's first frame is clean;
+    - all 75 states open with no JS error or warning.
+  - **375 × 667pt** (the emulator's size and density, reset after):
+    - the band fits and every slot is on screen;
+    - but with Gboard's taller keyboard and toolbar, the pitch is about 130pt high and the names collapse.
+- **Verified by the user on iOS (2026-11-22):** the band on the keys with all eleven slots, suggestions over the turf, the peek dot, "Pass the turn" both ways, Start from `pre-match`, and the band on an iPhone SE simulator.
+- **Follow-up (M24, small phones):** on a 667pt-tall Android with Gboard, the pitch is too small for the slot labels. Options for M24's small-phone pass:
+  - discs without labels under a pitch width;
+  - the clock beside the input instead of a row above it.
+
+  The iOS SE keyboard is about 70pt shorter (about a 154 × 185pt pitch by the sums), and mid-range Androids are taller than 667pt.
+- **Checks:** all pass. `npm run lint` keeps its one warning from Expo's generated `.expo/types/router.d.ts`.
+
 ## History

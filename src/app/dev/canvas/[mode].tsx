@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowLeftRight } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GameCanvas from '@/components/game/GameCanvas';
 import NotFoundView from '@/components/shell/NotFoundView';
+import { Button } from '@/components/ui/button';
 import {
   AFTER_GATE_STATE,
   type CanvasFrame,
@@ -10,11 +14,21 @@ import {
   SNAPSHOT_EVENT_DELAY_MS,
 } from '@/lib/dev/canvas-states';
 import { SAMPLE_SUGGESTION_INDEX } from '@/lib/dev/samples';
-import type { CanvasMode } from '@/types/canvas';
+import type { CanvasMode, CanvasView } from '@/types/canvas';
 
 // Outside the component: the clock is read once, when a state opens
 function buildSnapshot(mode: CanvasMode, name?: string): CanvasSnapshot {
   return resolveCanvasState(mode, name).build(Date.now());
+}
+
+// The full scoreboard's 112pt, plus a gap
+const DEV_BUTTON_TOP = 120;
+
+// Dev only: the server's handover, so the keyboard's drop can be tried
+function passTurn(view: CanvasView): CanvasView {
+  if (view.mode !== 'duel') return view;
+  const turn = view.turn === 'you' ? 'opponent' : 'you';
+  return { ...view, turn, input: turn === 'you' ? 'live' : 'locked' };
 }
 
 type CanvasPreviewProps = { mode: CanvasMode; state?: string };
@@ -23,6 +37,7 @@ type CanvasPreviewProps = { mode: CanvasMode; state?: string };
 const CanvasPreview = ({ mode, state }: CanvasPreviewProps) => {
   const [snapshot, setSnapshot] = useState(() => buildSnapshot(mode, state));
   const [frame, setFrame] = useState<CanvasFrame>(snapshot.frame);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const { next } = snapshot;
@@ -38,16 +53,40 @@ const CanvasPreview = ({ mode, state }: CanvasPreviewProps) => {
   }
 
   return (
-    <GameCanvas
-      view={frame.view}
-      guess={frame.guess}
-      directory={SAMPLE_SUGGESTION_INDEX}
-      onGuessChange={(guess) => setFrame((current) => ({ ...current, guess }))}
-      // Snapshots have no server to send a guess to
-      onGuessSubmit={() => {}}
-      onGateAction={openGate}
-      onQuit={() => router.back()}
-    />
+    <View className="flex-1">
+      <GameCanvas
+        view={frame.view}
+        guess={frame.guess}
+        directory={SAMPLE_SUGGESTION_INDEX}
+        onGuessChange={(guess) =>
+          setFrame((current) => ({ ...current, guess }))
+        }
+        // Snapshots have no server to send a guess to
+        onGuessSubmit={() => {}}
+        onGateAction={openGate}
+        onQuit={() => router.back()}
+      />
+      {/* Clear of Expo's dev bubble: under the full scoreboard, on the turf */}
+      {mode === 'duel' ? (
+        <View
+          className="absolute right-2"
+          // The status bar's height is known only at run time
+          style={{ top: insets.top + DEV_BUTTON_TOP }}
+        >
+          <Button
+            icon={ArrowLeftRight}
+            size="icon"
+            accessibilityLabel="Pass the turn"
+            onPress={() =>
+              setFrame((current) => ({
+                ...current,
+                view: passTurn(current.view),
+              }))
+            }
+          />
+        </View>
+      ) : null}
+    </View>
   );
 };
 

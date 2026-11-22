@@ -6,11 +6,23 @@ import { SECTION_LABEL } from '@/styles/classes';
 type Props = {
   chip?: ReactNode;
   footer?: ReactNode;
+  // The keyboard band: one row, no header
+  isCompact?: boolean;
   children: ReactNode;
 };
 
 // A section of the rail, not a card of its own; phones drop the hint
-const CardFrame = ({ chip, footer, children }: Props) => {
+const CardFrame = ({ chip, footer, isCompact = false, children }: Props) => {
+  if (isCompact) {
+    return (
+      <View className="flex-row flex-wrap items-center gap-x-3 gap-y-1">
+        {children}
+        {footer}
+        {chip}
+      </View>
+    );
+  }
+
   return (
     <View className="gap-2">
       <View className="min-h-6 flex-row items-center justify-between gap-2">

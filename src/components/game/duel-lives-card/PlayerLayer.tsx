@@ -32,10 +32,18 @@ type Props = {
   isShown: boolean;
   // The layer that sets the card's height stays in the flow
   isOverlay: boolean;
+  // The band drops the sticker row; the shirts' label names the player
+  isCompact?: boolean;
 };
 
 // One player's lives; the hidden one is faded, untouchable and silent
-const PlayerLayer = ({ actor, player, isShown, isOverlay }: Props) => {
+const PlayerLayer = ({
+  actor,
+  player,
+  isShown,
+  isOverlay,
+  isCompact = false,
+}: Props) => {
   const opacity = useSharedValue(isShown ? 1 : 0);
 
   useEffect(() => {
@@ -53,21 +61,28 @@ const PlayerLayer = ({ actor, player, isShown, isOverlay }: Props) => {
       // A Reanimated style: the cross-fade between players
       style={fadeStyle}
     >
-      <View className="min-w-0 flex-row items-center gap-2">
-        <Badge
-          variant="sticker"
-          tone={actor}
-          tilt="none"
-          label={ACTOR_LABELS[actor]}
-        />
-        <Text
-          numberOfLines={1}
-          className="min-w-0 flex-1 font-body-medium text-14"
-        >
-          {player.handle}
-        </Text>
-      </View>
-      <Tally lives={player.lives} owner={actor} />
+      {isCompact ? null : (
+        <View className="min-w-0 flex-row items-center gap-2">
+          <Badge
+            variant="sticker"
+            tone={actor}
+            tilt="none"
+            label={ACTOR_LABELS[actor]}
+          />
+          <Text
+            numberOfLines={1}
+            className="min-w-0 flex-1 font-body-medium text-14"
+          >
+            {player.handle}
+          </Text>
+        </View>
+      )}
+      <Tally
+        lives={player.lives}
+        owner={actor}
+        isCompact={isCompact}
+        whose={isCompact ? ACTOR_LABELS[actor] : undefined}
+      />
     </Animated.View>
   );
 };

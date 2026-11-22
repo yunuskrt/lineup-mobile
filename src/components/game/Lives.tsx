@@ -15,10 +15,12 @@ type Props = {
   owner?: DuelActor;
   // The rail's larger shirts
   isLarge?: boolean;
+  // Names the owner where no sticker beside the shirts does
+  whose?: string;
 };
 
 // The server's count; a drop empties shirts, it never decides one
-const Lives = ({ lives, owner = 'you', isLarge = false }: Props) => {
+const Lives = ({ lives, owner = 'you', isLarge = false, whose }: Props) => {
   const runs = useMotionPolicy();
   const [previousLives, setPreviousLives] = useState(lives);
   const [drop, setDrop] = useState<Drop | null>(null);
@@ -32,7 +34,7 @@ const Lives = ({ lives, owner = 'you', isLarge = false }: Props) => {
     <View
       accessible
       accessibilityRole="image"
-      accessibilityLabel={`${lives} of ${MAX_LIVES} lives left`}
+      accessibilityLabel={`${whose ? `${whose}: ` : ''}${lives} of ${MAX_LIVES} lives left`}
       className={isLarge ? 'flex-row gap-1.5' : 'flex-row gap-1'}
     >
       {PIPS.map((index) => (
