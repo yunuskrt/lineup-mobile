@@ -4,7 +4,9 @@ import Pitch from '@/components/pitch/Pitch';
 import GridSlot from '@/components/pitch/squad-grid/GridSlot';
 import { Text } from '@/components/ui/text';
 import { LOADING_FORMATION, slotLayout } from '@/lib/formation';
+import { newRevealIds } from '@/lib/new-reveals';
 import { discSize, fitPitch, labelSize, slotWidth } from '@/lib/squad-grid';
+import type { GridPulse } from '@/types/feedback';
 import type { FoundPlayer, RevealedPlayer } from '@/types/player';
 
 type Props = {
@@ -12,6 +14,8 @@ type Props = {
   revealed: FoundPlayer[];
   // Pro only, and only once the player reveals
   missed?: RevealedPlayer[];
+  // An "Already named": that player's slot pulses once
+  pulse?: GridPulse;
   isLoading?: boolean;
 };
 
@@ -20,9 +24,23 @@ const SquadGrid = ({
   formation,
   revealed,
   missed,
+  pulse,
   isLoading = false,
 }: Props) => {
   const [box, setBox] = useState({ width: 0, height: 0 });
+  const [previousRevealed, setPreviousRevealed] = useState(revealed);
+  const [wasLoading, setWasLoading] = useState(isLoading);
+  const [newIds, setNewIds] = useState<ReadonlySet<string>>(() => new Set());
+
+  if (revealed !== previousRevealed || isLoading !== wasLoading) {
+    setPreviousRevealed(revealed);
+    setWasLoading(isLoading);
+    // Whatever is there as loading ends is a snapshot
+    setNewIds(
+      newRevealIds(previousRevealed, revealed, isLoading || wasLoading),
+    );
+  }
+
   const layout = isLoading ? LOADING_FORMATION : formation;
   const points = slotLayout(layout);
   const pitch = fitPitch(box.width, box.height);
@@ -54,26 +72,35 @@ const SquadGrid = ({
         >
           <Pitch width={pitch.width} height={pitch.height} />
           {points ? (
-            points.map((point) => (
-              <View
-                key={point.slot}
-                className="absolute"
-                // The point is the disc's foot, so reveals never shift
-                style={{
-                  width,
-                  left: (point.x / 100) * pitch.width - width / 2,
-                  top: (point.y / 100) * pitch.height - size.disc,
-                }}
-              >
-                <GridSlot
-                  position={point.position}
-                  size={size}
-                  player={playersBySlot.get(point.slot)}
-                  missedPlayer={missedBySlot.get(point.slot)}
-                  isLoading={isLoading}
-                />
-              </View>
-            ))
+            points.map((point) => {
+              const player = playersBySlot.get(point.slot);
+              return (
+                <View
+                  key={point.slot}
+                  className="absolute"
+                  // The point is the disc's foot, so reveals never shift
+                  style={{
+                    width,
+                    left: (point.x / 100) * pitch.width - width / 2,
+                    top: (point.y / 100) * pitch.height - size.disc,
+                  }}
+                >
+                  <GridSlot
+                    position={point.position}
+                    size={size}
+                    player={player}
+                    missedPlayer={missedBySlot.get(point.slot)}
+                    isLoading={isLoading}
+                    isNew={player !== undefined && newIds.has(player.id)}
+                    pulseKey={
+                      player !== undefined && pulse?.playerId === player.id
+                        ? pulse.key
+                        : undefined
+                    }
+                  />
+                </View>
+              );
+            })
           ) : (
             <View className="absolute inset-0 items-center justify-center p-4">
               <Text

@@ -1,4 +1,5 @@
 import React from 'react';
+import RevealCard from '@/components/pitch/RevealCard';
 import SquadSlot from '@/components/pitch/SquadSlot';
 import type { SlotSize } from '@/types/pitch';
 import type {
@@ -13,15 +14,18 @@ type Props = {
   player: FoundPlayer | undefined;
   missedPlayer: RevealedPlayer | undefined;
   isLoading: boolean;
+  isNew: boolean;
+  pulseKey: number | undefined;
 };
 
-// M10 swaps the filled slot for the reveal card
 const GridSlot = ({
   position,
   size,
   player,
   missedPlayer,
   isLoading,
+  isNew,
+  pulseKey,
 }: Props) => {
   if (isLoading) {
     return <SquadSlot state="loading" position={position} size={size} />;
@@ -41,13 +45,12 @@ const GridSlot = ({
     return <SquadSlot state="empty" position={position} size={size} />;
   }
   return (
-    <SquadSlot
-      state="filled"
+    <RevealCard
+      player={player}
       position={position}
       size={size}
-      name={player.name}
-      imageUrl={player.imageUrl}
-      foundBy={player.foundBy}
+      isNew={isNew}
+      pulseKey={pulseKey}
     />
   );
 };
