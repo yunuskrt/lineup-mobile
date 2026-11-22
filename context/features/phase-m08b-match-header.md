@@ -60,4 +60,33 @@ No copy list.
     - a missing crest and logo fall back cleanly;
     - the placeholder is the same height as the header.
 
+- **Deviations recorded during implementation:**
+  - **The crest fallback is the club's short name, not initials,** as the web's `ClubCrest` draws it ("NGU" on the card fill).
+  - **Crest sizes are 32, 40 and 80.** The web's phone sizes (32, 32 and 64) cut "NGU" to "N…" in the header, so the header crest is 40, as the spec had it.
+  - **The named side's emphasis follows the web:**
+    - a butter (`score-digits`) ring around the crest's white tile, with its name in semibold;
+    - the other side's name at 70% opacity.
+
+    `ClubCrest`'s own ink `isNamed` ring is for light surfaces (rows).
+  - **The compact strip has no competition short name to use** (the contract has none). It reads `NGU 3–3 RSO · Continental Cup 2005`: the short names and score in `score-digits`, then the competition and year.
+  - **New helpers,** in `src/lib/scoreboard.ts` with tests:
+    - `compactScoreParts` builds the strip;
+    - `scoreboardLabel` is the screen-reader label for both layouts: "Northgate United 3 to 3 Real Solvara. Continental Cup, 25 May 2005. You're naming Northgate United's starting XI".
+  - **Sizes:**
+    - full is 112pt tall (the web's phone `h-28`) and compact 44pt;
+    - the score is 32 (the design's figure; the web's phone size is 24);
+    - `hasControls` keeps 48pt at each end;
+    - the competition logo is 16pt on a white tile, and its fallback mark is drawn in ink.
+  - **The scoreboard's content is centred (user, 2026-11-22).** Quit (✕) will sit at the left end and sound (♪) at the right, rather than both on the right. `hasControls` keeps 48pt at each end, so the score is centred and nothing truncates. With both on the right (96pt each side), the competition cut to "Continen…". The compact strip is centred too.
+  - **The loading placeholder** is in `match-header/Placeholder.tsx`, and is the same fixed height as the header.
+- **Verified on Android, `/dev/pitch?section=header`:**
+  - full with the home side named, and with the away side named;
+  - compact in one line;
+  - the no-image fallbacks (short name and trophy mark);
+  - both loading placeholders at the header's height, each over the pitch.
+
+  The sample crest and logo paths are web-only, so every specimen shows the fallbacks.
+- **Verified by the user on iOS (2026-11-22):** the header section, centred, with both sides named, the compact strip, the fallbacks and the placeholders.
+- **Follow-up:** the web's `src/lib/match-header.test.ts` covers the copied `matchHeaderView` but wasn't in copy list A. Paste it unchanged into the same path and record it in `context/web-carryover.md`.
+
 ## History

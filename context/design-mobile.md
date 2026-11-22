@@ -198,7 +198,7 @@ GAME · your turn, keyboard up        DUEL · their turn, keyboard down
 
 - **Your turn:** the clock is about 48pt beside the lives. Up to 3 suggestion rows, then the list scrolls. Found discs take the finder's colour; empty slots show their position.
 - **Their turn:** the clock is full size (about 144pt), and the full board shows, with the scoreboard as on web (crest over name, score between, context under).
-- **Solo:** the same board with no turn stickers; the band always shows. Quit (✕) and sound (♪) sit on the scoreboard.
+- **Solo:** the same board with no turn stickers; the band always shows. Quit (✕) sits at the scoreboard's left end and sound (♪) at its right, so the score stays centred (user, 2026-11-22).
 - **Both, 375:** the scoreboard is always the one-line strip, suggestions drop to 2 rows, and discs go from about 44pt to 36pt.
 
 ```text

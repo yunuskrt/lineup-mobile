@@ -30,7 +30,7 @@ This todo file is for developer-side use.
 
 ## Part 2 — Game Pieces
 
-- [ ] 🟡 **Phase M08 — Pitch & Match Header**: SVG pitch, formation slots, discs and headshots, ink scoreboard with crests and logo, `/dev/pitch`. — partially done: M08b match header left
+- [x] **Phase M08 — Pitch & Match Header**: SVG pitch, formation slots, discs and headshots, ink scoreboard with crests and logo, `/dev/pitch`.
 - [ ] **Phase M09 — Clock, Lives & Turn**: Linear open-arc clock in three stages, lives section, turn sticker pair, `/dev/ring`, `/dev/lives`.
 - [ ] **Phase M10 — Guess Input & Feedback**: Live, pending, locked and cooldown input, suggestions above the keyboard, reveal, pulse vs shake.
 - [ ] **Phase M11 — Game Canvas & States**: Portrait board with pitch and rail, keyboard band, gate overlay, skeletons, `/dev/canvas?state=`.
