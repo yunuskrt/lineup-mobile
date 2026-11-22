@@ -83,7 +83,9 @@ const MatchHeader = ({
         <Team team={view.home} />
         <Text
           maxFontSizeMultiplier={1.2}
-          className={cn(TYPE_NUMBER, TABULAR_NUMS, 'text-32 text-score-digits')}
+          className={cn(TYPE_NUMBER, 'text-32 text-score-digits')}
+          // fontVariant: NativeWind can't reach tabular figures
+          style={TABULAR_NUMS}
         >
           {view.home.score}
           <Text className="text-on-scoreboard opacity-50">{' – '}</Text>

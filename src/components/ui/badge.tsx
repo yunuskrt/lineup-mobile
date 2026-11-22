@@ -24,6 +24,8 @@ type Props = {
   icon?: LucideIcon;
   // Stickers are uppercase; "18S" would misread a count
   isNormalCase?: boolean;
+  // Only on fixed game pieces, such as the found count
+  maxFontSizeMultiplier?: number;
 };
 
 export const Badge = ({
@@ -33,6 +35,7 @@ export const Badge = ({
   tilt,
   icon: Icon,
   isNormalCase = false,
+  maxFontSizeMultiplier,
 }: Props) => {
   const lean = tilt ?? (variant === 'sticker' ? 'left' : 'none');
   const face = cn(
@@ -46,6 +49,7 @@ export const Badge = ({
         <Icon size={14} strokeWidth={2.5} color={ROLES['on-accent']} />
       ) : null}
       <Text
+        maxFontSizeMultiplier={maxFontSizeMultiplier}
         className={cn(
           BADGE_LABEL[variant],
           'text-on-accent',
