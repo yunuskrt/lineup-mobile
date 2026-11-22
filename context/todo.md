@@ -34,7 +34,7 @@ This todo file is for developer-side use.
 - [x] **Phase M09 — Clock, Lives & Turn**: Linear open-arc clock in three stages, lives section, turn sticker pair, `/dev/ring`, `/dev/lives`.
 - [x] **Phase M10 — Guess Input & Feedback**: Live, pending, locked and cooldown input, suggestions above the keyboard, reveal, pulse vs shake.
 - [x] **Phase M11 — Game Canvas & States**: Portrait board with pitch and rail, keyboard band, gate overlay, skeletons, `/dev/canvas?state=`.
-- [ ] **Phase M12 — Sound & Haptics**: Synthesized cues on a native Web Audio runtime, clock ticks, mute toggle, haptics doubling cues. (copy list C)
+- [ ] 🟡 **Phase M12 — Sound & Haptics**: Synthesized cues on a native Web Audio runtime, clock ticks, mute toggle, haptics doubling cues. (copy list C) — partially done: M12b haptics left
 
 ## Part 3 — Screens
 

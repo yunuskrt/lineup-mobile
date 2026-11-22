@@ -190,6 +190,19 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | `src/lib/api/pro-switch.test.ts` | M06 | word for word |
 | `src/lib/api/pro-switch.ts` | M06 | adapted: `isProSwitchOff` removed (a Next.js server fetch); `isSwitchOffIn` kept |
 
+## Copy list C — Sound (M12a), 8 files
+
+| File | Phase | State |
+| --- | --- | --- |
+| `src/lib/sound/engine.test.ts` | M12a | adapted: registers a fake runtime instead of stubbing `window` and `AudioContext`. The fake's `resume` settles on a microtask, as a real one does. Added: the session is set once; the first cue wakes the context; a running context plays the first cue; the foreground listener. The unlock-twice case resumes once after it runs |
+| `src/lib/sound/engine.ts` | M12a | adapted: an injected `AudioRuntime` (`registerAudioRuntime`: the context factory, the audio session and the foreground event) replaces `window`'s `AudioContext` and the gesture listeners. `listenForUnlock` wakes the context now and on each return to the foreground, and `playCue` wakes a suspended context |
+| `src/lib/sound/preference.test.ts` | M12a | adapted: the browser cases become a configured store across a relaunch |
+| `src/lib/sound/preference.ts` | M12a | adapted: `configureSoundStorage` replaces `browserStorage()` (`localStorage`) |
+| `src/lib/sound/render.test.ts` | M12a | adapted: vibrato is checked as a frequency curve, plus a curve that glides |
+| `src/lib/sound/render.ts` | M12a | adapted: vibrato is drawn as a `setValueCurveAtTime` frequency curve, as `react-native-audio-api` 1.0.1 aborts when a node is connected to an `AudioParam` |
+| `src/hooks/use-game-sounds.ts` | M12a | adapted: no `'use client'`; a `requestAnimationFrame` loop, run only while the ring runs, replaces motion's `useAnimationFrame` |
+| `src/hooks/use-sound.ts` | M12a | adapted: no `'use client'` and no server snapshot |
+
 ## Single files (later phases)
 
 Pasted by hand outside a copy list, when a phase needed them.

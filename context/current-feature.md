@@ -35,3 +35,4 @@ Not Started
 - M11a Board & Gate: game board, rail, gate overlay, /dev/canvas, loading.
 - M11b Keyboard Band: band on the keys, list over turf, turn drops keys.
 - M11c Welcome Demo: showcase loop, driven input, pause, /dev/welcome.
+- M12a Sound: copy list C, native Web Audio, mute toggle, cues, /dev/sound.

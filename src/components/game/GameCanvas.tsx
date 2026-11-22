@@ -22,11 +22,13 @@ import GateCountdown from '@/components/game/game-canvas/GateCountdown';
 import GateSeconds from '@/components/game/game-canvas/GateSeconds';
 import LifeLostFlash from '@/components/game/LifeLostFlash';
 import MatchHeader from '@/components/game/MatchHeader';
+import SoundToggle from '@/components/game/SoundToggle';
 import SquadGrid from '@/components/pitch/SquadGrid';
 import QuitChip from '@/components/shell/QuitChip';
 import StateNotice from '@/components/shell/StateNotice';
 import { Alert } from '@/components/ui/alert';
 import { IconTile } from '@/components/ui/icon-tile';
+import { useGameSounds } from '@/hooks/use-game-sounds';
 import { useKeyboardFrame } from '@/hooks/use-keyboard-frame';
 import {
   gateSize,
@@ -109,6 +111,7 @@ const GameCanvas = ({
 }: Props) => {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
+  useGameSounds(view);
   const isShort = isShortScreen(useWindowDimensions().height);
   const keyboard = useKeyboardFrame();
   // The band's height with no list open; the list floats over the turf
@@ -149,20 +152,24 @@ const GameCanvas = ({
       {/* Light over the ink only while the board is the screen in view */}
       {isFocused ? <StatusBar style="light" /> : null}
       {/* Over the scrim, so a gate never traps the player */}
-      {hasQuit ? (
+      <View
+        pointerEvents="box-none"
+        className="absolute inset-x-0 top-0 z-10"
+        // The status bar's height is known only at run time
+        style={{ paddingTop: insets.top }}
+      >
+        {/* Quit left and sound right, so the score stays centred */}
         <View
           pointerEvents="box-none"
-          className="absolute inset-x-0 top-0 z-10"
-          // The status bar's height is known only at run time
-          style={{ paddingTop: insets.top }}
+          className={cn(
+            'flex-row items-center justify-between px-0.5',
+            isCompact ? 'h-11' : 'h-28',
+          )}
         >
-          <View
-            className={cn('justify-center px-0.5', isCompact ? 'h-11' : 'h-28')}
-          >
-            <QuitChip onQuit={onQuit} isOnScoreboard />
-          </View>
+          {hasQuit ? <QuitChip onQuit={onQuit} isOnScoreboard /> : <View />}
+          <SoundToggle isOnScoreboard />
         </View>
-      ) : null}
+      </View>
       <CanvasGate
         isOpen={view.gate !== null}
         icon={notice.icon}
