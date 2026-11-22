@@ -32,3 +32,4 @@ Not Started
 - M09b Lives: shirts, solo and duel lives, reconnect chip, life-lost flash.
 - M10a Guess Input: four statuses, keyboard kept up, suggestions, shake.
 - M10b Feedback & Reveal: verdict toast, reveal card, pulse, grid wiring.
+- M11a Board & Gate: game board, rail, gate overlay, /dev/canvas, loading.

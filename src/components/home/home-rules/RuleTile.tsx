@@ -27,7 +27,9 @@ const RuleTile = ({ count, label, text, fill, isShort }: Props) => {
       <Text
         numberOfLines={1}
         maxFontSizeMultiplier={1.2}
-        className={cn(TYPE_NUMBER, TABULAR_NUMS, 'w-20 text-30')}
+        className={cn(TYPE_NUMBER, 'w-20 text-30')}
+        // fontVariant: NativeWind can't reach tabular figures
+        style={TABULAR_NUMS}
       >
         {count}
       </Text>
