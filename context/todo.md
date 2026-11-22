@@ -26,7 +26,7 @@ This todo file is for developer-side use.
 - [x] **Phase M04 — Native Kit**: Buttons, tiles, stickers, input, select sheet, checkbox, alert, empty, avatar, skeleton, dialog, toast; `/dev/kit`.
 - [x] **Phase M05 — App Shell & Navigation**: Root stack, sticker tab bar (Play, Archive, Profile), full-screen game stack, safe areas, splash, 404.
 - [x] **Phase M06 — API Client & Session**: Real transport, bearer token in SecureStore, env URL, Query on AppState and NetInfo, 401 sign-out. (copy list B)
-- [ ] **Phase M07 — Welcome & Auth**: First-launch welcome with the demo loop, sign in, sign up, continue as guest, guest upgrade.
+- [x] **Phase M07 — Welcome & Auth**: First-launch welcome with the demo loop, sign in, sign up, continue as guest, guest upgrade.
 
 ## Part 2 — Game Pieces
 

@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
-import { TextInput, type TextInputProps, View } from 'react-native';
+import React, { type Ref, useState } from 'react';
+import {
+  TextInput,
+  type TextInputInstance,
+  type TextInputProps,
+  View,
+} from 'react-native';
 import { TEXT_INPUT } from '@/components/ui/styles';
 import { cn } from '@/lib/utils';
 import { SHADOW_HARD_SM } from '@/styles/shadow';
 import { ROLES } from '@/styles/tokens';
 
 type Props = TextInputProps & {
+  ref?: Ref<TextInputInstance>;
   className?: string;
   isInvalid?: boolean;
 };
 
 export const Input = ({
+  ref,
   className,
   isInvalid = false,
   editable = true,
@@ -26,6 +33,7 @@ export const Input = ({
       style={isFocused ? SHADOW_HARD_SM : undefined}
     >
       <TextInput
+        ref={ref}
         editable={editable}
         placeholderTextColor={ROLES['fg-dim']}
         aria-invalid={isInvalid}
