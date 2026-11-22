@@ -160,3 +160,32 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | `src/types/summary.ts` | M02 | word for word |
 | `src/types/user.ts` | M02 | word for word |
 | `vitest.config.mts` | M02 | word for word |
+
+## Copy list B — API and data hooks (M06), 24 files
+
+| File | Phase | State |
+| --- | --- | --- |
+| `src/components/providers/query-client.test.ts` | M06 | word for word |
+| `src/components/providers/query-client.ts` | M06 | word for word |
+| `src/hooks/use-archive.ts` | M06 | word for word |
+| `src/hooks/use-auth.test.ts` | M06 | adapted: the `ensureSession` tests base their fake on a real HTTP client (no mock to reuse); a `clearSession` token test added |
+| `src/hooks/use-auth.ts` | M06 | adapted: `clearSession` also calls `clearToken()` |
+| `src/hooks/use-catalog-overview.ts` | M06 | word for word |
+| `src/hooks/use-changed-since-mount.ts` | M06 | word for word |
+| `src/hooks/use-cooldown-end.ts` | M06 | adapted: `'use client'` removed |
+| `src/hooks/use-filter-options.ts` | M06 | word for word |
+| `src/hooks/use-image-fallback.ts` | M06 | adapted: `'use client'` removed |
+| `src/hooks/use-player-directory.test.ts` | M06 | word for word |
+| `src/hooks/use-player-directory.ts` | M06 | word for word |
+| `src/hooks/use-pro.ts` | M06 | word for word |
+| `src/hooks/use-profile.ts` | M06 | word for word |
+| `src/hooks/use-seconds-left.ts` | M06 | word for word |
+| `src/hooks/use-solo-allowance.ts` | M06 | word for word |
+| `src/hooks/use-today.ts` | M06 | word for word |
+| `src/lib/api/config.test.ts` | M06 | adapted: the env name; the `API_MODE` and mock-flag tests removed |
+| `src/lib/api/config.ts` | M06 | adapted: reads `EXPO_PUBLIC_API_URL` with `!__DEV__` as production; `API_MODE` and the mock flags removed; `isOrigin` uses try/catch, as Hermes's `URL` has no `canParse` |
+| `src/lib/api/http/api-client.ts` | M06 | word for word |
+| `src/lib/api/http/transport.test.ts` | M06 | adapted: expects no `credentials` |
+| `src/lib/api/http/transport.ts` | M06 | adapted: no `credentials`; sends `Authorization: Bearer` from the token store; stores a `set-auth-token` header |
+| `src/lib/api/pro-switch.test.ts` | M06 | word for word |
+| `src/lib/api/pro-switch.ts` | M06 | adapted: `isProSwitchOff` removed (a Next.js server fetch); `isSwitchOffIn` kept |
