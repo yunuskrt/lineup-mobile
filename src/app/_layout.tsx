@@ -7,9 +7,11 @@ import '@/global.css';
 import QueryProvider from '@/components/providers/QueryProvider';
 import { loadToken } from '@/lib/api/http/token-store';
 import { registerApiClient } from '@/lib/api/register';
+import { registerSound } from '@/lib/sound/register';
 import { ROLES } from '@/styles/tokens';
 
 registerApiClient();
+registerSound();
 // The splash holds until the saved session token is read
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
