@@ -79,4 +79,32 @@ No copy list.
     - the long handle truncates on one line;
     - the static shirts read clearly in both colours.
 
+- **Deviations recorded during implementation:**
+  - **Kit change:** `Badge` takes `isNormalCase`, so the reconnect chip reads "Reconnecting, 18s", not "RECONNECTING, 18S", as the web's `normal-case` does.
+  - **The hint lines aren't carried:**
+    - "Clock at 0 costs a life…" is hidden below `lg` on web, so phones never show it;
+    - `CardFrame` takes no `hint`;
+    - the "Lives" label is an accessibility header, as React Native has no labelled section.
+  - **Where the parts live:**
+    - each shirt is `lives/Shirt.tsx`, with its own fill fade and shake;
+    - the duel card's two layers are `duel-lives-card/PlayerLayer.tsx`. Your layer sits in the flow and the opponent's lies over it, so the card keeps one height;
+    - the hold-and-peek logic is `src/hooks/use-shown-actor.ts`, from the web's local hook;
+    - `ReconnectChip` keeps its own 250ms tick, as on web. `useSecondsLeft` needs a gate label it has no use for.
+  - **Reanimated is told never to skip** the fill fade, the cross-fade and the flash (`ReduceMotion.Never`), as all three are `keep`. Only the shake is gated (`lifeShake`).
+  - **The flash covers the screen it's placed on** (`absolute inset-0`), as React Native has no `fixed`. The dev page puts it over the whole page; M11 does the same on the board.
+  - **The dev page's duel card is 240pt wide,** about the rail beside the clock, so the long handle truncates. Turning pairing off also clears the reconnect state, as there's no opponent to reconnect.
+- **Verified on Android, `/dev/lives`:**
+  - Lose a life empties the third shirt to a dashed outline, with a full-screen red flash and the shirt caught mid-fade and mid-shake;
+  - Hand over switches the card to the opponent;
+  - Opponent reconnecting shows "Reconnecting, 19s" with the Wi-Fi-off icon and turns the opponent's dot amber;
+  - a tap on your dot peeks back at your lives;
+  - the label row doesn't grow when the chip appears;
+  - before pairing, the opponent's dot is disabled;
+  - at 240pt the handle truncates on one line ("Ciarán O'Donova…");
+  - the static rows read clearly in both colours.
+
+  With animations off (after a relaunch), a lost life fades with no shake, and the flash still shows.
+- **Verified by the user on iOS (2026-11-22):** `/dev/lives`, losing a life (shake, fade, flash), every duel button and chip, the dots; with Reduce Motion on after a relaunch, no shake, the fade and flash remain.
+- **Follow-up (M11):** check that a tap on a peek dot keeps the keyboard up and the guess focused, in the band with the board's `keyboardShouldPersistTaps="handled"`. This page has no input to test it with.
+
 ## History

@@ -22,6 +22,8 @@ type Props = {
   // A sticker leans left unless told otherwise
   tilt?: BadgeTilt;
   icon?: LucideIcon;
+  // Stickers are uppercase; "18S" would misread a count
+  isNormalCase?: boolean;
 };
 
 export const Badge = ({
@@ -30,6 +32,7 @@ export const Badge = ({
   tone = 'neutral',
   tilt,
   icon: Icon,
+  isNormalCase = false,
 }: Props) => {
   const lean = tilt ?? (variant === 'sticker' ? 'left' : 'none');
   const face = cn(
@@ -42,7 +45,13 @@ export const Badge = ({
       {Icon ? (
         <Icon size={14} strokeWidth={2.5} color={ROLES['on-accent']} />
       ) : null}
-      <Text className={cn(BADGE_LABEL[variant], 'text-on-accent')}>
+      <Text
+        className={cn(
+          BADGE_LABEL[variant],
+          'text-on-accent',
+          isNormalCase && 'normal-case',
+        )}
+      >
         {label}
       </Text>
     </>
