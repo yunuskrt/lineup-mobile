@@ -28,3 +28,4 @@ Not Started
 - M07 Welcome & Auth: welcome, sign in, sign up, guest, guest upgrade.
 - M08a Pitch & Squad: SVG pitch, squad grid, slot states, /dev/pitch.
 - M08b Match Header: ink scoreboard, compact strip, crest and logo.
+- M09a Countdown Clock: open-arc ring, linear sweep, turn stickers.
