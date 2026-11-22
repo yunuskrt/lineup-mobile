@@ -31,3 +31,4 @@ Not Started
 - M09a Countdown Clock: open-arc ring, linear sweep, turn stickers.
 - M09b Lives: shirts, solo and duel lives, reconnect chip, life-lost flash.
 - M10a Guess Input: four statuses, keyboard kept up, suggestions, shake.
+- M10b Feedback & Reveal: verdict toast, reveal card, pulse, grid wiring.

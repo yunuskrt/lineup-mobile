@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { View } from 'react-native';
 import PlayerHeadshot from '@/components/pitch/PlayerHeadshot';
 import EmptyDisc from '@/components/pitch/squad-slot/EmptyDisc';
@@ -44,6 +44,8 @@ type Props = {
       name: string;
       imageUrl: string | null;
       foundBy?: DuelActor;
+      // Painted under the slot: the reveal flash, the already-named pulse
+      backdrop?: ReactNode;
     }
 );
 
@@ -152,6 +154,7 @@ const SquadSlot = (props: Props) => {
       accessibilityLabel={`${positionName}, ${props.name}${finder}`}
       className="items-center gap-0.5"
     >
+      {props.backdrop}
       <PlayerHeadshot
         name={props.name}
         imageUrl={props.imageUrl}

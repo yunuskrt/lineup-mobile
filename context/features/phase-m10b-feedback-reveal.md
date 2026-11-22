@@ -74,4 +74,26 @@ No copy list.
       - Mount with 5 shows them with no animation;
     - with reduced motion, there's no spring and no rise, but the flash, the pulse and the fades remain.
 
+- **Deviations recorded during implementation:**
+  - **New helper:** `src/lib/new-reveals.ts` (`newRevealIds`), with tests. It's the web grid's inline new-player rule: a snapshot, when loading ends or on mount, animates none.
+  - **The spring is Reanimated's:** `REVEAL_SPRING` (a 320ms visual duration, bounce 0.25) becomes `withSpring` with a perceptual 320ms and a damping ratio of 0.75.
+  - **Reanimated is told never to skip** the reveal's fade, the flash, the pulse and the toast's fade (`ReduceMotion.Never`), as all four are `keep`. Only the spring and the toast's rise are gated.
+  - **Your flash is green, the opponent's olive.** These are the theme's `reveal-flash-you` (the found colour) and `reveal-flash-opponent`, as on web. The label carries the finder's blue or orange.
+  - **The toast is announced** with `announceForAccessibility` when it arrives, and removed after 1.6s, so faded text doesn't linger. It lives in `feedback-toast/ToastChip.tsx`, keyed per toast.
+  - **Where the parts live:** the flash and the pulse are `reveal-card/RevealFlash.tsx` and `reveal-card/FoundPulse.tsx`, passed to `SquadSlot` as its `backdrop`.
+  - **`/dev/reveal` mounts 4, not 5:** the web's `SNAPSHOT_SIZE` is 4.
+  - **`/dev/feedback` has no `?section=` filter:** it's a single board (controls, grid, toast, input). It runs the verdicts through the copied `applyFeedback` over a `FeedbackState`.
+- **Verified on Android:**
+  - `/dev/reveal`:
+    - a reveal is caught mid-fade with the finder's flash behind the slot (green for you, olive for the opponent), then settles;
+    - two reveal at once, both flashing;
+    - Mount with 4 shows them settled at once, with no flash;
+  - `/dev/feedback`:
+    - "Already found" pulses Gareth Pennock's slot in umber, shows "Already named" and clears the input, with no shake;
+    - "Not in this XI" shows its toast and keeps the text, with no pulse;
+    - "Correct new" reveals the next slot with the flash.
+
+  With animations off (after a relaunch), the reveal shows at full size with its flash, and the pulse and the toast still show.
+- **Verified by the user on iOS (2026-11-22):** `/dev/reveal` (both finders, two at once, Mount with 4) and `/dev/feedback` (each verdict), with Reduce Motion on and off.
+
 ## History
