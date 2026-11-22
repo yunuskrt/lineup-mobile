@@ -1,5 +1,5 @@
 import React, { type ReactNode } from 'react';
-import { View } from 'react-native';
+import { KeyboardAvoidingView, View } from 'react-native';
 import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -22,6 +22,8 @@ type Props = {
   headerAction?: ReactNode;
   // Tab screens leave the bottom edge to the tab bar
   hasTabBar?: boolean;
+  // Forms: the column rises above the keyboard, taps still land
+  avoidsKeyboard?: boolean;
 };
 
 // A ruled column under a large title that collapses into a bar
@@ -31,6 +33,7 @@ const Screen = ({
   canGoBack = false,
   headerAction,
   hasTabBar = false,
+  avoidsKeyboard = false,
 }: Props) => {
   const insets = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
@@ -73,25 +76,32 @@ const Screen = ({
           style={barStyle}
         />
       </View>
-      <Animated.ScrollView
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        // The bottom inset is known only at run time
-        contentContainerStyle={{ paddingBottom: bottom }}
+      <KeyboardAvoidingView
+        behavior={avoidsKeyboard ? 'padding' : undefined}
+        enabled={avoidsKeyboard}
+        className="flex-1"
       >
-        <View className="gap-6 px-4 pt-2">
-          <View
-            onLayout={(event) =>
-              titleHeight.set(event.nativeEvent.layout.height)
-            }
-          >
-            <Text accessibilityRole="header" className={TYPE_TITLE}>
-              {title}
-            </Text>
+        <Animated.ScrollView
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          keyboardShouldPersistTaps="handled"
+          // The bottom inset is known only at run time
+          contentContainerStyle={{ paddingBottom: bottom }}
+        >
+          <View className="gap-6 px-4 pt-2">
+            <View
+              onLayout={(event) =>
+                titleHeight.set(event.nativeEvent.layout.height)
+              }
+            >
+              <Text accessibilityRole="header" className={TYPE_TITLE}>
+                {title}
+              </Text>
+            </View>
+            {children}
           </View>
-          {children}
-        </View>
-      </Animated.ScrollView>
+        </Animated.ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 };
