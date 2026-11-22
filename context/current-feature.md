@@ -34,3 +34,4 @@ Not Started
 - M10b Feedback & Reveal: verdict toast, reveal card, pulse, grid wiring.
 - M11a Board & Gate: game board, rail, gate overlay, /dev/canvas, loading.
 - M11b Keyboard Band: band on the keys, list over turf, turn drops keys.
+- M11c Welcome Demo: showcase loop, driven input, pause, /dev/welcome.
