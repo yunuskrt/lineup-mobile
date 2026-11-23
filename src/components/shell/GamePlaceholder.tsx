@@ -18,7 +18,7 @@ type Props = {
   builtIn: string;
 };
 
-// A game screen until M14 and M18: Quit and Back both ask first
+// The duel screen until M17 and M18: Quit and Back both ask first
 const GamePlaceholder = ({ title, builtIn }: Props) => {
   const [isAsking, setIsAsking] = useState(false);
   // What /play handed over, so the hand-off can be checked

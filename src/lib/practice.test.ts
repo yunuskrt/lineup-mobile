@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   clearOpenRun,
   hasOpenRun,
@@ -50,21 +50,9 @@ describe('practice in the URL', () => {
 });
 
 describe('the open timed run', () => {
-  afterEach(() => vi.unstubAllGlobals());
-
-  function stubStorage() {
-    const store = new Map<string, string>();
-    vi.stubGlobal('window', {
-      sessionStorage: {
-        getItem: (key: string) => store.get(key) ?? null,
-        setItem: (key: string, value: string) => store.set(key, value),
-        removeItem: (key: string) => store.delete(key),
-      },
-    });
-  }
+  afterEach(() => clearOpenRun());
 
   it('is marked by a timed run and cleared at its end', () => {
-    stubStorage();
     expect(hasOpenRun()).toBe(false);
     markOpenRun('session-1');
     expect(hasOpenRun()).toBe(true);
@@ -72,14 +60,11 @@ describe('the open timed run', () => {
     expect(hasOpenRun()).toBe(false);
   });
 
-  it('never throws without storage: no warning instead', () => {
-    vi.stubGlobal('window', {
-      get sessionStorage(): Storage {
-        throw new Error('blocked');
-      },
-    });
-    expect(() => markOpenRun('session-1')).not.toThrow();
-    expect(() => clearOpenRun()).not.toThrow();
+  it('keeps the latest run when a second is marked', () => {
+    markOpenRun('session-1');
+    markOpenRun('session-2');
+    expect(hasOpenRun()).toBe(true);
+    clearOpenRun();
     expect(hasOpenRun()).toBe(false);
   });
 });

@@ -22,11 +22,13 @@ import GateCountdown from '@/components/game/game-canvas/GateCountdown';
 import GateSeconds from '@/components/game/game-canvas/GateSeconds';
 import LifeLostFlash from '@/components/game/LifeLostFlash';
 import MatchHeader from '@/components/game/MatchHeader';
+import SidePickCard from '@/components/game/SidePickCard';
 import SoundToggle from '@/components/game/SoundToggle';
 import SquadGrid from '@/components/pitch/SquadGrid';
 import QuitChip from '@/components/shell/QuitChip';
 import StateNotice from '@/components/shell/StateNotice';
 import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { IconTile } from '@/components/ui/icon-tile';
 import { useGameSounds } from '@/hooks/use-game-sounds';
 import { useKeyboardFrame } from '@/hooks/use-keyboard-frame';
@@ -96,6 +98,8 @@ type Props = {
   onGateSecondaryAction?: () => void;
   // Without it, quitting goes back to /play
   onQuit?: () => void;
+  // Under the summary's notice until M15 builds its actions
+  onBackToPlay?: () => void;
 };
 
 // One board: scoreboard, turf and rail, edge to edge
@@ -108,6 +112,7 @@ const GameCanvas = ({
   onGateAction,
   onGateSecondaryAction = () => {},
   onQuit,
+  onBackToPlay,
 }: Props) => {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
@@ -176,7 +181,18 @@ const GameCanvas = ({
         title={view.gate?.title ?? ''}
         detail={notice.detail}
         size={gateSize(view)}
-        body={gatePart ? laterNotice(gatePart) : notice.body}
+        body={
+          view.gate?.sidePick ? (
+            <SidePickCard
+              sidePick={view.gate.sidePick}
+              onPick={(side) => onGateAction(side)}
+            />
+          ) : gatePart ? (
+            laterNotice(gatePart)
+          ) : (
+            notice.body
+          )
+        }
         action={
           view.gate?.actionLabel ? (
             <GateAction
@@ -253,7 +269,16 @@ const GameCanvas = ({
                 />
               ) : null}
               {railPart ? (
-                laterNotice(railPart)
+                <View className="gap-3">
+                  {laterNotice(railPart)}
+                  {onBackToPlay ? (
+                    <Button
+                      label="Back to play"
+                      variant="secondary"
+                      onPress={onBackToPlay}
+                    />
+                  ) : null}
+                </View>
               ) : (
                 <ActiveRail
                   view={view}

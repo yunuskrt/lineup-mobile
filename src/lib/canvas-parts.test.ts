@@ -30,12 +30,12 @@ describe('gateSize', () => {
 });
 
 describe('laterGatePart', () => {
-  it('names the side pick and the lobby', () => {
-    expect(laterGatePart(viewOf('solo', 'side-pick'))?.phase).toBe('M14');
+  it('names the lobby', () => {
     expect(laterGatePart(viewOf('duel', 'paired'))?.phase).toBe('M17');
   });
 
   it('names nothing for a gate the board draws itself', () => {
+    expect(laterGatePart(viewOf('solo', 'side-pick'))).toBeNull();
     expect(laterGatePart(viewOf('solo', 'pre-match'))).toBeNull();
     expect(laterGatePart(viewOf('duel', 'you-reconnecting'))).toBeNull();
   });

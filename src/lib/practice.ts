@@ -50,29 +50,17 @@ export const PRACTICE_QUIT_COPY: QuitDialogCopy = {
   dismissLabel: 'Keep practising',
 };
 
-const OPEN_RUN_KEY = 'lineup:open-run';
+// The app's unfinished timed run, if any; memory lasts as a web tab
+let openRunId: string | null = null;
 
-// This tab's unfinished timed run, if any
 export function hasOpenRun(): boolean {
-  try {
-    return window.sessionStorage.getItem(OPEN_RUN_KEY) !== null;
-  } catch {
-    return false;
-  }
+  return openRunId !== null;
 }
 
 export function markOpenRun(sessionId: string): void {
-  try {
-    window.sessionStorage.setItem(OPEN_RUN_KEY, sessionId);
-  } catch {
-    // No storage: no warning, never a crash
-  }
+  openRunId = sessionId;
 }
 
 export function clearOpenRun(): void {
-  try {
-    window.sessionStorage.removeItem(OPEN_RUN_KEY);
-  } catch {
-    // No storage: nothing to clear
-  }
+  openRunId = null;
 }
