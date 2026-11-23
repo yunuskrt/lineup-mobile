@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { routeParamsFor, sameParams, searchParamsOf } from '@/lib/route-params';
+import {
+  paramsKey,
+  routeParamsFor,
+  sameParams,
+  searchParamsOf,
+} from '@/lib/route-params';
 
 describe('searchParamsOf', () => {
   it('keeps a repeated key as repeated entries', () => {
@@ -53,14 +58,37 @@ describe('routeParamsFor', () => {
   });
 });
 
+describe('paramsKey', () => {
+  it('reads the same set the same in any key order', () => {
+    expect(paramsKey(new URLSearchParams('step=start&mode=solo'))).toBe(
+      paramsKey(new URLSearchParams('mode=solo&step=start')),
+    );
+  });
+
+  it('keeps a repeated key in its order', () => {
+    expect(paramsKey(new URLSearchParams('club=b&mode=solo&club=a'))).toBe(
+      'club=b&club=a&mode=solo',
+    );
+  });
+});
+
 describe('sameParams', () => {
-  it('compares in order, as a URL does', () => {
+  it('ignores key order, as the route keeps its own', () => {
     const a = new URLSearchParams('mode=solo&step=start');
-    expect(sameParams(a, new URLSearchParams('mode=solo&step=start'))).toBe(
+    expect(sameParams(a, new URLSearchParams('step=start&mode=solo'))).toBe(
       true,
     );
     expect(sameParams(a, new URLSearchParams('mode=duel&step=start'))).toBe(
       false,
     );
+  });
+
+  it('tells a repeated key in another order apart', () => {
+    expect(
+      sameParams(
+        new URLSearchParams('club=a&club=b'),
+        new URLSearchParams('club=b&club=a'),
+      ),
+    ).toBe(false);
   });
 });

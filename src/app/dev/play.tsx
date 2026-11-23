@@ -2,13 +2,19 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { DevScreen, DevSection } from '@/components/dev/DevSection';
+import FiltersStep from '@/components/play/FiltersStep';
 import ModeChoice from '@/components/play/ModeChoice';
 import SoloAllowanceNote from '@/components/play/SoloAllowanceNote';
 import ProLockButton from '@/components/pro/ProLockButton';
 import ProLockCaption from '@/components/pro/ProLockCaption';
 import { Text } from '@/components/ui/text';
-import { sampleAllowance } from '@/lib/dev/samples';
+import {
+  SAMPLE_FILTER_OPTIONS,
+  SAMPLE_FILTERS,
+  sampleAllowance,
+} from '@/lib/dev/samples';
 import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
+import type { Filters } from '@/types/filters';
 import type { ModeOption } from '@/types/play';
 import type { ProAccess } from '@/types/pro';
 
@@ -52,6 +58,33 @@ const AllowanceSample = ({ used }: AllowanceSampleProps) => {
   );
 };
 
+type FiltersSampleProps = { state: 'panel' | 'loading' | 'error' };
+
+// Step 2 on the static catalog, as each of its three states
+const FiltersSample = ({ state }: FiltersSampleProps) => {
+  const [filters, setFilters] = useState<Filters>(SAMPLE_FILTERS);
+  const isPanel = state === 'panel';
+  return (
+    <FiltersStep
+      filters={isPanel ? filters : null}
+      options={isPanel ? SAMPLE_FILTER_OPTIONS : null}
+      onChange={setFilters}
+      error={state === 'error' ? new Error('sample') : null}
+      onRetry={() => {}}
+      onBack={() => {}}
+      onNext={() => {}}
+      isHeadingFocused={false}
+    />
+  );
+};
+
+const FILTER_SAMPLES: { state: FiltersSampleProps['state']; title: string }[] =
+  [
+    { state: 'panel', title: 'Filters' },
+    { state: 'loading', title: 'Filters, loading' },
+    { state: 'error', title: 'Filters, failed' },
+  ];
+
 type Props = {};
 
 // The web's ProPreview pieces for /play; the switch is off locally
@@ -76,6 +109,11 @@ const PlayDevScreen = ({}: Props) => {
           </View>
         ))}
       </DevSection>
+      {FILTER_SAMPLES.map(({ state, title }) => (
+        <DevSection key={state} id={state} title={title} only={section}>
+          <FiltersSample state={state} />
+        </DevSection>
+      ))}
       <DevSection id="lock" title="Pro lock" only={section}>
         <View className="gap-2">
           <Caption label="Locked button, default and large" />

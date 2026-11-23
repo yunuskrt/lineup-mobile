@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import FiltersStep from '@/components/play/FiltersStep';
 import LaterStep from '@/components/play/LaterStep';
 import ModeStep from '@/components/play/ModeStep';
 import PlaySteps from '@/components/play/PlaySteps';
@@ -20,8 +21,14 @@ import {
   withModeOption,
   withStep,
 } from '@/lib/play-steps';
-import { routeParamsFor, sameParams, searchParamsOf } from '@/lib/route-params';
+import {
+  paramsKey,
+  routeParamsFor,
+  sameParams,
+  searchParamsOf,
+} from '@/lib/route-params';
 import { allowanceLine, isSoloCapped } from '@/lib/solo-allowance';
+import type { Filters } from '@/types/filters';
 import type { ModeOption } from '@/types/play';
 import type { RouteParams } from '@/types/route-params';
 
@@ -66,8 +73,8 @@ const PlayScreen = ({}: Props) => {
   }
 
   // A stale step or unknown filter in the params gives way to the state
-  const paramsQuery = params.toString();
-  const stateQuery = queryFor(step).toString();
+  const paramsQuery = paramsKey(params);
+  const stateQuery = paramsKey(queryFor(step));
   useEffect(() => {
     if (paramsQuery === stateQuery) return;
     router.setParams(
@@ -89,6 +96,11 @@ const PlayScreen = ({}: Props) => {
 
   function changeOption(next: ModeOption) {
     write(queryFor(step, next));
+  }
+
+  function changeFilters(next: Filters) {
+    if (!options.data) return;
+    write(queryFor(step, picked, filtersToParams(next, options.data)));
   }
 
   const previous = PLAY_STEPS[PLAY_STEPS.indexOf(step) - 1];
@@ -133,13 +145,14 @@ const PlayScreen = ({}: Props) => {
         />
       ) : null}
       {step === 'filters' ? (
-        <LaterStep
-          title="Choose filters"
-          builtIn="M13b: the filters"
+        <FiltersStep
+          filters={filters}
+          options={options.data ?? null}
+          onChange={changeFilters}
+          error={options.error}
+          onRetry={() => void options.refetch()}
           onBack={() => goTo('mode')}
-          nextLabel="Next: start"
           onNext={() => goTo('start')}
-          isNextDisabled={!filters}
           isHeadingFocused={hasMoved}
         />
       ) : null}

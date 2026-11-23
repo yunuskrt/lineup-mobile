@@ -17,7 +17,6 @@ Not Started
 ## History
 
 <!-- Keep this updated. Earliest to latest -->
-
 - M01 Repo & Scaffold: template cleared, dev build, scripts, ESLint rules.
 - M02 Core Carry-over: copy list A, moved types, ledger, /dev/runtime.
 - M03 Theme & Fonts: NativeWind 4, web tokens, shadows, fonts, /dev/theme.
@@ -38,3 +37,4 @@ Not Started
 - M12a Sound: copy list C, native Web Audio, mute toggle, cues, /dev/sound.
 - M12b Haptics: cue-to-haptic map, buzz with each cue, mute keeps haptics.
 - M13a Steps & Mode: steps in params, mode cards, Pro lock, /dev/play.
+- M13b Filters Step: sheet rows, club search, era pair, skeleton, dev page.
