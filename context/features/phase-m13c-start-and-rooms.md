@@ -75,6 +75,46 @@ No copy list.
   - sign out first and Start, and a guest should be made.
 
   Claude checks Android first and stops when it needs you.
+- **Deviations recorded during implementation:**
+  - **The game href is `gameHref`** in `src/lib/game-href.ts`, with tests. It builds the query string as `withQuery` does, typed as an Expo Router `Href`:
+    - a `{ pathname, params }` object was tried first;
+    - pushing it joined the club array into one `club=a,b` value, which M17 would have read as no club;
+    - repeated keys in a URL string arrive as separate values.
+  - **Create room is split,** so its button can leave its section on a short screen:
+    - `useCreateRoom` (`src/hooks/use-create-room.ts`) and the `CreateRoomState` type (`src/types/create-room.ts`);
+    - `CreateRoomButton` (the button, or the lock);
+    - `CreateRoomNotes` (the lock caption and the error);
+    - `CreateRoom` (the "Play a friend" section);
+    - `HOST_CAPTION` in `play/shared.ts`.
+  - **375pt:** on a short screen, a duel's Start and Create room share a row at the default size (44pt):
+    - at the large size, "Find an opponent" wraps in half a row;
+    - Back leaves that row. The header chevron and Android's back button still step back;
+    - the lock caption and any error go under the row.
+  - **The practice warning uses the kit's `Dialog` directly.** `QuitDialog` arrives in M14. It closes after Start either way, as the screen stays under the game.
+  - **The archive button also shows for Practice**, as on web: its mode is solo.
+  - **The join row:**
+    - Play keeps the last room code the params brought. The canonicalising effect drops `room` once the filters load;
+    - a later code, from a warm link, replaces it. `JoinRoom` is keyed by it, so the boxes start afresh;
+    - the boxes are drawn over a hidden `TextInput` (opacity 0). The box the next letter lands in gets the small hard shadow;
+    - there's no `maxLength`, so a longer paste is cleaned before it's cut.
+  - **The Play screen avoids the keyboard** (`Screen`'s `avoidsKeyboard`), so the code boxes stay above it. The hint under them can sit behind the keyboard while typing.
+  - **`StartError` is read aloud** through `AccessibilityInfo.announceForAccessibility`, the web's `role="alert"`.
+  - **`GamePlaceholder` lists what it received** under "Received", for both game routes.
+  - **`LaterStep` is deleted:** step 3 was its last use.
+  - **The summary's Edit buttons never shrink.** A longer value cut "Edit mode" to "Edit".
+  - **Verified on Android:**
+    - step 3 for solo, duel and practice: the summary, Edit mode and Edit filters, and the archive button;
+    - each Start label, handing over:
+      - solo: `competition`, `from` and `to`;
+      - practice: `practice=1`;
+      - Create room: two `club` values and `room=create`;
+    - the join row:
+      - "K7OM2X" showing the hint with Join off;
+      - "K7QM2X" joining with Go;
+      - a `room=h4wn7p` link filling the boxes;
+    - `/dev/play`'s Start at 3 left and at the cap, and Create room open, locked and pending;
+    - at 375 × 667, Start and Create room side by side.
+  - **Verified on iOS by the user (2026-11-23):** solo and duel starts with their params on the placeholders, the look-alike hint, Create room, and a guest made by Start after signing out.
 - Verification:
   - `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run format:check` and `npx expo-doctor` all pass;
   - the copied `room-code`, `lobby`, `practice` and `solo-allowance` tests keep passing.

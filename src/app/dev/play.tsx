@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { DevScreen, DevSection } from '@/components/dev/DevSection';
+import CreateRoom from '@/components/play/CreateRoom';
 import FiltersStep from '@/components/play/FiltersStep';
 import ModeChoice from '@/components/play/ModeChoice';
+import PlayStart from '@/components/play/PlayStart';
 import SoloAllowanceNote from '@/components/play/SoloAllowanceNote';
 import ProLockButton from '@/components/pro/ProLockButton';
 import ProLockCaption from '@/components/pro/ProLockCaption';
@@ -26,7 +28,7 @@ const ACCESS_SAMPLES: { access: ProAccess; label: string }[] = [
 
 const ALLOWANCE_SAMPLES = [
   { used: 2, label: 'Free, 3 left' },
-  { used: 5, label: 'Free, 0 left: Start disabled in M13c' },
+  { used: 5, label: 'Free, 0 left' },
 ];
 
 type CaptionProps = { label: string };
@@ -85,6 +87,28 @@ const FILTER_SAMPLES: { state: FiltersSampleProps['state']; title: string }[] =
     { state: 'error', title: 'Filters, failed' },
   ];
 
+type StartSampleProps = { used: number };
+
+// Start over the allowance line; at the cap it's disabled
+const StartSample = ({ used }: StartSampleProps) => {
+  const [now] = useState(() => Date.now());
+  const allowance = sampleAllowance(used, now);
+  const isCapped = isSoloCapped(allowance);
+  return (
+    <PlayStart
+      mode="solo"
+      href={{ pathname: '/play/solo' }}
+      isCapped={isCapped}
+    >
+      <SoloAllowanceNote
+        line={allowanceLine(allowance) ?? ''}
+        isCapped={isCapped}
+        onPlayDuel={() => {}}
+      />
+    </PlayStart>
+  );
+};
+
 type Props = {};
 
 // The web's ProPreview pieces for /play; the switch is off locally
@@ -114,6 +138,30 @@ const PlayDevScreen = ({}: Props) => {
           <FiltersSample state={state} />
         </DevSection>
       ))}
+      <DevSection id="start" title="Start" only={section}>
+        {ALLOWANCE_SAMPLES.map(({ used, label }) => (
+          <View key={used} className="gap-2">
+            <Caption label={label} />
+            <StartSample used={used} />
+          </View>
+        ))}
+      </DevSection>
+      <DevSection id="room" title="Create room" only={section}>
+        {ACCESS_SAMPLES.map(({ access, label }) => (
+          <View key={access} className="gap-2">
+            <Caption label={label} />
+            <CreateRoom
+              room={{
+                hostAccess: access,
+                canCreate: true,
+                isBusy: false,
+                error: null,
+                create: () => {},
+              }}
+            />
+          </View>
+        ))}
+      </DevSection>
       <DevSection id="lock" title="Pro lock" only={section}>
         <View className="gap-2">
           <Caption label="Locked button, default and large" />
