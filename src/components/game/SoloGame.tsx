@@ -14,6 +14,7 @@ import {
 } from '@/lib/archive';
 import { FILTER_PARAMS, withMode, withoutParams } from '@/lib/filters';
 import { gameHref, playHref } from '@/lib/game-href';
+import type { PlayStep } from '@/lib/play-steps';
 import { PRACTICE_PARAM } from '@/lib/practice';
 import { routeParamsFor, searchParamsOf } from '@/lib/route-params';
 import { capLine } from '@/lib/solo-allowance';
@@ -27,8 +28,16 @@ const SoloGame = ({}: Props) => {
   const routeParams = useLocalSearchParams<RouteParams>();
   // A snapshot, as the web's: the run reads its setup once
   const [params, setParams] = useState(() => searchParamsOf(routeParams));
-  const { state, chooseSide, submitGuess, quit, retry, widen, revealMissed } =
-    useSoloRun(params);
+  const {
+    state,
+    chooseSide,
+    submitGuess,
+    quit,
+    playAgain,
+    retry,
+    widen,
+    revealMissed,
+  } = useSoloRun(params);
   const directory = usePlayerDirectory(state.offer?.sessionId ?? null);
   const allowance = useSoloAllowance();
   const cap = capLine(allowance.data ?? null);
@@ -41,9 +50,13 @@ const SoloGame = ({}: Props) => {
     state.summary === null;
 
   // Back on /play with this run's choices, under the game, not on it
-  function leave() {
+  function backTo(step: PlayStep) {
     const choices = withMode(withoutPickedMatch(params), 'solo');
-    router.dismissTo(playHref(choices, soloExitStep(state)));
+    router.dismissTo(playHref(choices, step));
+  }
+
+  function leave() {
+    backTo(soloExitStep(state));
   }
 
   function backToArchive() {
@@ -100,6 +113,12 @@ const SoloGame = ({}: Props) => {
     }
   }
 
+  // The same route and params: a picked match and practice carry over
+  function handlePlayAgain() {
+    setGuess('');
+    playAgain();
+  }
+
   function handleQuit() {
     if (canConfirmQuit) setIsQuitOpen(true);
     else leave();
@@ -118,7 +137,13 @@ const SoloGame = ({}: Props) => {
         onGateAction={handleGateAction}
         onGateSecondaryAction={leave}
         onQuit={handleQuit}
+        onPlayAgain={handlePlayAgain}
+        // A picked run, practice or not, goes back to the archive
+        onChangeFilters={
+          state.pickedMatchId ? backToArchive : () => backTo('filters')
+        }
         onBackToPlay={leave}
+        onPlayDuel={playDuel}
         onRevealMissed={revealMissed}
       />
       <QuitDialog
