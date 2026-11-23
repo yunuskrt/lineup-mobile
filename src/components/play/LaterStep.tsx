@@ -8,25 +8,14 @@ import { Button } from '@/components/ui/button';
 
 type Props = {
   title: string;
-  // Which spec builds it, e.g. "M13b: the filters"
+  // Which spec builds it, e.g. "M13c: the start"
   builtIn: string;
   onBack: () => void;
-  nextLabel?: string;
-  onNext?: () => void;
-  isNextDisabled?: boolean;
   isHeadingFocused: boolean;
 };
 
-// Steps 2 and 3 until M13b and M13c: heading, notice, Back
-const LaterStep = ({
-  title,
-  builtIn,
-  onBack,
-  nextLabel,
-  onNext,
-  isNextDisabled = false,
-  isHeadingFocused,
-}: Props) => {
+// Step 3 until M13c: heading, notice, Back
+const LaterStep = ({ title, builtIn, onBack, isHeadingFocused }: Props) => {
   return (
     <>
       <View className={STEP_SECTION}>
@@ -45,16 +34,6 @@ const LaterStep = ({
             size="large"
             onPress={onBack}
           />
-          {nextLabel && onNext ? (
-            <View className="flex-1">
-              <Button
-                label={nextLabel}
-                size="large"
-                isDisabled={isNextDisabled}
-                onPress={onNext}
-              />
-            </View>
-          ) : null}
         </View>
       </View>
     </>

@@ -26,6 +26,13 @@ export function routeParamsFor(
   return written;
 }
 
+// The route keeps its own key order; a repeated key's order still counts
+export function paramsKey(params: URLSearchParams): string {
+  const sorted = new URLSearchParams(params);
+  sorted.sort();
+  return sorted.toString();
+}
+
 export function sameParams(a: URLSearchParams, b: URLSearchParams): boolean {
-  return a.toString() === b.toString();
+  return paramsKey(a) === paramsKey(b);
 }
