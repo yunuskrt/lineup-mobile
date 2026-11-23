@@ -45,3 +45,4 @@ Not Started
 - M15a Summary Panel: outcome, stats, named table, missed reveal, layout.
 - M15b Result Actions: Play again in place, change filters, duel, archive.
 - M16 Socket Client: copy list E, real duel client, /dev/socket, takeover.
+- M17a Duel Route & Queue: copy list F, DuelGame, lobby panel, forfeit.

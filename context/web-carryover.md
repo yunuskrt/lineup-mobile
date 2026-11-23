@@ -218,6 +218,12 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | `src/lib/api/socket/messages.ts` | M16 | word for word |
 | `src/lib/api/socket/messages.test.ts` | M16 | word for word |
 
+## Copy list F — Duel hook (M17a), 1 file
+
+| File | Phase | State |
+| --- | --- | --- |
+| `src/hooks/use-duel.ts` | M17a | word for word |
+
 ## Single files (later phases)
 
 Pasted by hand outside a copy list, when a phase needed them.

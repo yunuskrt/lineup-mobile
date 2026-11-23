@@ -30,14 +30,16 @@ describe('gateSize', () => {
 });
 
 describe('laterGatePart', () => {
-  it('names the lobby', () => {
-    expect(laterGatePart(viewOf('duel', 'paired'))?.phase).toBe('M17');
+  it('names the room steps, still ahead', () => {
+    expect(laterGatePart(viewOf('duel', 'room-waiting'))?.phase).toBe('M17b');
+    expect(laterGatePart(viewOf('duel', 'room-expired'))?.phase).toBe('M17b');
   });
 
   it('names nothing for a gate the board draws itself', () => {
     expect(laterGatePart(viewOf('solo', 'side-pick'))).toBeNull();
     expect(laterGatePart(viewOf('solo', 'pre-match'))).toBeNull();
     expect(laterGatePart(viewOf('duel', 'you-reconnecting'))).toBeNull();
+    expect(laterGatePart(viewOf('duel', 'paired'))).toBeNull();
   });
 });
 
