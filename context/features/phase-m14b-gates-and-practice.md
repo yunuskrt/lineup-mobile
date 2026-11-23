@@ -73,6 +73,31 @@ From the M14 row of the Web References table in `context/todo.md`; read-only in 
   - send the app to the background mid-round for 20 seconds, then come back.
 
   Claude checks Android first and stops when it needs you.
+- **Deviations recorded during implementation:**
+  - **`/dev/canvas` already had every solo gate but a failed step.** Picking refused, match gone, practice locked, practice closed and four empty pools came with the copied states:
+    - `solo-failed-sync` is added to the copied `src/lib/dev/canvas-states.ts`: a sync the server didn't answer, with Try again;
+    - the ledger records it.
+  - **An empty pool's Change filters opens step 2,** as `theme.md` § Play setup says ("Change filters opens step 2"):
+    - the web sends every exit to step 3;
+    - `soloExitStep` (`src/lib/solo-exit.ts`, tested) picks Filters for an empty pool and Start otherwise;
+    - `leave` uses it for the gate's buttons, Quit and Back to play.
+  - **Play a duel replaces the solo screen** rather than pushing on top, so Back from the duel never returns to a dead gate.
+  - **Back to the archive dismisses the game onto the Archive tab.**
+  - **The background:** the copied hook's round timer already re-syncs when the app comes back, so `SoloGame` adds no `AppState` listener.
+  - **A run left in play is rare on a phone:** Quit and Back both ask first. It happens when a link opens `/play` mid-run, or a failed step's gate goes back. The warning was checked with a link.
+  - **Verified on Android:**
+    - `lineup://play/solo?match=not-a-real-id` showing "That match isn't in the game any more", and Back to the archive landing on the Archive tab;
+    - APOEL Nicosia over 2000–01 to 2001–02 showing "No match for those clubs":
+      - Include every club restarted on a May 2002 match;
+      - Change filters opened step 2 with APOEL and the era kept;
+    - a practice run:
+      - the practice panel from the side pick, no clock or lives;
+      - Forlán revealed;
+      - "End this practice run?" with Keep practising and End practice, and its end;
+    - a timed run left open through a link, then Start practice asking "Practise now?", and Practise starting the practice run;
+    - a timed run sent to the background for 20 seconds: on return a life was gone and the next round was running;
+    - on `/dev/canvas`: the daily cap (Play a duel, Back to play, See Pro), picking refused, practice locked, practice closed and `solo-failed-sync`.
+  - **Verified on iOS by the user (2026-11-23):** the empty-pool widen, the match-gone link, a practice run ended, the practise-over-run warning, and a run back from 20 seconds in the background.
 - Verification:
   - `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run format:check` and `npx expo-doctor` all pass;
   - the copied `solo-run`, `practice` and `system-states` tests keep passing;

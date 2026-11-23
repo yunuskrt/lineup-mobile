@@ -7,11 +7,17 @@ import { usePlayerDirectory } from '@/hooks/use-player-directory';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoloRun } from '@/hooks/use-solo-run';
 import { sideSchema } from '@/lib/api/schemas/common';
-import { withoutPickedMatch } from '@/lib/archive';
-import { withMode } from '@/lib/filters';
-import { playHref } from '@/lib/game-href';
-import { searchParamsOf } from '@/lib/route-params';
+import {
+  ARCHIVE_PATH,
+  PICKED_MATCH_PARAM,
+  withoutPickedMatch,
+} from '@/lib/archive';
+import { FILTER_PARAMS, withMode, withoutParams } from '@/lib/filters';
+import { gameHref, playHref } from '@/lib/game-href';
+import { PRACTICE_PARAM } from '@/lib/practice';
+import { routeParamsFor, searchParamsOf } from '@/lib/route-params';
 import { capLine } from '@/lib/solo-allowance';
+import { soloExitStep } from '@/lib/solo-exit';
 import { soloCanvasView, soloGateAction, soloQuitCopy } from '@/lib/solo-run';
 import type { RouteParams } from '@/types/route-params';
 
@@ -20,8 +26,9 @@ type Props = {};
 const SoloGame = ({}: Props) => {
   const routeParams = useLocalSearchParams<RouteParams>();
   // A snapshot, as the web's: the run reads its setup once
-  const [params] = useState(() => searchParamsOf(routeParams));
-  const { state, chooseSide, submitGuess, quit, retry } = useSoloRun(params);
+  const [params, setParams] = useState(() => searchParamsOf(routeParams));
+  const { state, chooseSide, submitGuess, quit, retry, widen } =
+    useSoloRun(params);
   const directory = usePlayerDirectory(state.offer?.sessionId ?? null);
   const allowance = useSoloAllowance();
   const cap = capLine(allowance.data ?? null);
@@ -33,10 +40,28 @@ const SoloGame = ({}: Props) => {
     state.session?.status === 'active' &&
     state.summary === null;
 
-  // Step 3 of /play with this run's choices, under the game, not on it
+  // Back on /play with this run's choices, under the game, not on it
   function leave() {
     const choices = withMode(withoutPickedMatch(params), 'solo');
-    router.dismissTo(playHref(choices, 'start'));
+    router.dismissTo(playHref(choices, soloExitStep(state)));
+  }
+
+  function backToArchive() {
+    router.dismissTo(ARCHIVE_PATH);
+  }
+
+  // Duels are never capped; only the filters go along, in place of the run
+  function playDuel() {
+    const leftovers = [PICKED_MATCH_PARAM, PRACTICE_PARAM, FILTER_PARAMS.mode];
+    router.replace(gameHref('duel', withoutParams(params, leftovers)));
+  }
+
+  // The run restarts on the widened filters, and the params follow
+  async function widenAndRestart() {
+    const next = await widen();
+    if (!next) return;
+    setParams(next);
+    router.setParams(routeParamsFor(next, routeParams));
   }
 
   async function handleGuess(text: string) {
@@ -49,7 +74,6 @@ const SoloGame = ({}: Props) => {
     setIsQuitOpen(false);
   }
 
-  // The other actions arrive in M14b; until then they leave
   function handleGateAction(choiceId?: string) {
     switch (soloGateAction(state)) {
       case 'choose': {
@@ -57,12 +81,22 @@ const SoloGame = ({}: Props) => {
         if (side.success) void chooseSide(side.data);
         return;
       }
+      case 'widen':
+        void widenAndRestart();
+        return;
+      case 'leave':
+        leave();
+        return;
+      case 'playDuel':
+        playDuel();
+        return;
+      case 'backToArchive':
+        backToArchive();
+        return;
       case 'retry':
         if (state.failure?.step === 'quit') void confirmQuit();
         else retry();
         return;
-      default:
-        leave();
     }
   }
 

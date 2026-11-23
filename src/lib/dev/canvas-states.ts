@@ -527,6 +527,37 @@ function practiceClosed(): CanvasState<SoloCanvasView> {
   };
 }
 
+// Mobile only: a step that failed mid-run, so its Try again shows
+function failedSync(): CanvasState<SoloCanvasView> {
+  const session: SoloSession = {
+    sessionId: 'sample-run',
+    status: 'active',
+    match: SAMPLE_MATCH,
+    lives: MAX_LIVES,
+    found: SOLO_FOUND,
+    round: null,
+    practice: false,
+  };
+  const events: SoloRunEvent[] = [
+    { type: 'finding', matchId: null, practice: false },
+    { type: 'sessionReceived', session },
+    {
+      type: 'failed',
+      step: 'sync',
+      error: {
+        code: 'server_error',
+        message: 'Something went wrong on our side.',
+        retryAfterMs: null,
+      },
+    },
+  ];
+  const state = events.reduce(soloRunReducer, INITIAL_SOLO_RUN);
+  return {
+    description: "A sync the server didn't answer: Try again.",
+    build: () => ({ frame: { view: soloCanvasView(state), guess: '' } }),
+  };
+}
+
 const COOLDOWN_MS = 3_000;
 
 const RATE_LIMITED: SharedState = {
@@ -765,6 +796,7 @@ export const SOLO_CANVAS_STATES: Record<string, CanvasState<SoloCanvasView>> = {
     { isPractice: true },
   ),
   'practice-closed': practiceClosed(),
+  'solo-failed-sync': failedSync(),
   'solo-daily-cap': {
     description: 'Free with no solo runs left: Play a duel or See Pro.',
     build: (now) => ({

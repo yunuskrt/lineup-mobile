@@ -68,7 +68,7 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | `src/lib/dev/archive-states.test.ts` | M02 | word for word |
 | `src/lib/dev/archive-states.ts` | M02 | word for word |
 | `src/lib/dev/canvas-states.test.ts` | M02 | word for word |
-| `src/lib/dev/canvas-states.ts` | M02 | word for word |
+| `src/lib/dev/canvas-states.ts` | M02, M14b | adapted (M14b): adds `solo-failed-sync`, a sync that failed mid-run, so a failed step's Try again gate has a dev state |
 | `src/lib/dev/profile-states.test.ts` | M02 | word for word |
 | `src/lib/dev/profile-states.ts` | M02 | word for word |
 | `src/lib/dev/samples.ts` | M02 | word for word |
