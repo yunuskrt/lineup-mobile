@@ -1,10 +1,10 @@
 import React from 'react';
-import GamePlaceholder from '@/components/shell/GamePlaceholder';
+import SoloGame from '@/components/game/SoloGame';
 
 type Props = {};
 
 const SoloScreen = ({}: Props) => {
-  return <GamePlaceholder title="Solo run" builtIn="M14: the solo run" />;
+  return <SoloGame />;
 };
 
 export default SoloScreen;

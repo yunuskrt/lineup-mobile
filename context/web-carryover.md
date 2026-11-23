@@ -98,8 +98,8 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | `src/lib/play-steps.ts` | M02 | word for word |
 | `src/lib/plural.test.ts` | M02 | word for word |
 | `src/lib/plural.ts` | M02 | word for word |
-| `src/lib/practice.test.ts` | M02 | word for word |
-| `src/lib/practice.ts` | M02 | adapted: imports `QuitDialogCopy` from `@/types/quit-dialog`. **Browser-only:** the open-run flag uses `sessionStorage`; M14 moves it to device storage |
+| `src/lib/practice.test.ts` | M02, M14a | adapted (M14a): the open-run tests check the in-memory flag; the storage stubs are gone |
+| `src/lib/practice.ts` | M02, M14a | adapted: imports `QuitDialogCopy` from `@/types/quit-dialog`. M14a: the open-run flag lives in memory, not `sessionStorage`; the three functions keep their signatures |
 | `src/lib/pro.test.ts` | M02 | word for word |
 | `src/lib/pro.ts` | M02 | word for word |
 | `src/lib/profile.test.ts` | M02 | word for word |
@@ -202,6 +202,12 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | `src/lib/sound/render.ts` | M12a | adapted: vibrato is drawn as a `setValueCurveAtTime` frequency curve, as `react-native-audio-api` 1.0.1 aborts when a node is connected to an `AudioParam` |
 | `src/hooks/use-game-sounds.ts` | M12a, M12b | adapted: no `'use client'`; a `requestAnimationFrame` loop, run only while the ring runs, replaces motion's `useAnimationFrame`. M12b: each event cue fires its haptic (`cueHaptic`) beside `play`, as the mute leaves haptics on |
 | `src/hooks/use-sound.ts` | M12a | adapted: no `'use client'` and no server snapshot |
+
+## Copy list D — Solo run (M14a), 1 file
+
+| File | Phase | State |
+| --- | --- | --- |
+| `src/hooks/use-solo-run.ts` | M14a | word for word |
 
 ## Single files (later phases)
 

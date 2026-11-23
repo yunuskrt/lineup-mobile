@@ -26,7 +26,6 @@ export function laterGatePart(view: CanvasView): LaterPart | null {
   if (view.mode === 'duel' && view.lobby) {
     return { phase: 'M17', name: 'duel lobby' };
   }
-  if (view.gate?.sidePick) return { phase: 'M14', name: 'side pick' };
   return null;
 }
 
