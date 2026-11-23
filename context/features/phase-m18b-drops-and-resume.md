@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -59,5 +59,24 @@ From the M18 row of the Web References table in `context/todo.md`; read-only in 
   - **background on Android:** briefly, and past 20 seconds;
   - the dev states at both sizes;
   - `npm run lint`, `typecheck`, `test`, `build` and `npx expo-doctor`.
+- **Deviations recorded during implementation:**
+  - **The reducer test has 49 cases** (45, then 4 more of the web's drop cases at review). Its sessions and results are built from `samples.ts` (`samplePlayer`, `SAMPLE_MATCH`, the sample players), not from `canvas-states.ts`, whose builders aren't exported. Breaking two lines of the reducer on purpose (the requeue after a drop, and which side's life flashes) failed two of its cases.
+  - **Background past 20 seconds on Android doesn't forfeit.** The server never saw a drop: Android froze the app with its socket still open, so the duel played on by the clock, with lives lost on both sides. On return the buffered events replayed over about 3 seconds, then the server's result showed ("You lost", then "You won" on the next run). That is the server's answer rendered, as the coding standards ask; "you left" needs the server to see a drop, which is your iOS check.
+  - **Fixed: the keyboard over the result.** Back from the background on your turn, Android raised the keyboard over the result for about 3 seconds. `GameCanvas` now dismisses it when a game ends, as `CanvasGate` does for a gate. A re-run showed the result with no keyboard.
+  - **The away and called-off dev states were added,** as the web had none: `connection-closed`, `ended-away`, `ended-away-found` and `called-off`. Each is built by feeding `duelSessionReducer` the events a drop brings, so it shows what the app does. They are recorded as an adapted copy.
+  - **The dev canvas page builds in server time** (`serverClock.now()`, not `Date.now()`). The emulator's clock runs 19 seconds slow, so a deadline 18 seconds out read 0s, and the clocks read 0.
+  - **No change to the copied `use-duel.ts` or `duel-session.ts`:** the reducer test and the live flows found nothing wrong in them.
+- **Checked (Claude, Android emulator, 2026-11-24):**
+  - **the opponent's drop:** the script killed mid-duel gave "Reconnecting, 16s" by their lives and "…is reconnecting. Their clock keeps running." under the rail, then "Opponent left" with the Forfeit sticker;
+  - **background briefly (6 seconds):** the board came back as it was, with the clock having run on (11s to 4s), and no gate;
+  - **background past 20 seconds:** as the deviation above;
+  - **the dev states:** `you-reconnecting`, `opponent-reconnecting`, `connection-closed`, `ended-away`, `ended-away-found` and `called-off` at 390 × 844 and 375 × 667.
+- **Tests (`/feature test`):** `src/lib/dev/drop-states.test.ts`, this repo's own, beside the copied `canvas-states.test.ts`. Its 5 cases check what each drop dev state shows: the closed gate with Try again, the away gate while checking and once found, the called-off gate, and both reconnecting countdowns.
+- **Verified on iOS by the user (2026-11-24):** against a browser at `localhost:3000`: your drop (Wi-Fi off briefly, then past 20 seconds, then Try again), the opponent's drop (the browser tab closed), the app in the background, and a backend restart.
+  - **Past 20 seconds in the background, the duel played on,** as on Android: the socket stayed open, so the clock ran and lives were lost.
+  - **Quitting the app** (swiped away in the app switcher) closed the socket, and the result was "You left": the server's forfeit after its window. So "you left" comes from a real disconnect, never from the background alone.
+- **Follow-ups:**
+  - **On return from a long background on Android, the board is stale for about 3 seconds** while buffered events replay, and its input looks live. A guess sent then is refused with a toast, not lost silently. A "Catching up…" state on return is a design call (M21 or M24).
+  - **The rail behind the away gate still shows "Your turn"** (`clockLabel` with no turn). It's hidden behind the gate; it would be worth a look in M24.
 
 ## History

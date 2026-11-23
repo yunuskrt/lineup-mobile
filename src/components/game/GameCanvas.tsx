@@ -1,10 +1,12 @@
 import React, {
   type ReactNode,
   useDeferredValue,
+  useEffect,
   useMemo,
   useState,
 } from 'react';
 import {
+  Keyboard,
   type LayoutChangeEvent,
   Platform,
   useWindowDimensions,
@@ -135,6 +137,10 @@ const GameCanvas = ({
   const isCompact = isShort || isBand;
   // In the flow until measured, then over the turf with its room held
   const isFloating = isBand && bandHeight > 0;
+  // A result has no input; Android may raise the keys on return
+  useEffect(() => {
+    if (hasEnded) Keyboard.dismiss();
+  }, [hasEnded]);
   const notice = noticeParts(view.gate);
   const query = useDeferredValue(guess);
   // Keyed by value: views are rebuilt every render

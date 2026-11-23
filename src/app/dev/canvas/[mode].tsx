@@ -14,11 +14,12 @@ import {
   SNAPSHOT_EVENT_DELAY_MS,
 } from '@/lib/dev/canvas-states';
 import { SAMPLE_SUGGESTION_INDEX } from '@/lib/dev/samples';
+import { serverClock } from '@/lib/server-clock';
 import type { CanvasMode, CanvasView } from '@/types/canvas';
 
-// Outside the component: the clock is read once, when a state opens
+// Read once as a state opens, in server time, as the ring reads it
 function buildSnapshot(mode: CanvasMode, name?: string): CanvasSnapshot {
-  return resolveCanvasState(mode, name).build(Date.now());
+  return resolveCanvasState(mode, name).build(serverClock.now());
 }
 
 // The full scoreboard's 112pt, plus a gap

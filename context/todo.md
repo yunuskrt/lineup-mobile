@@ -43,7 +43,7 @@ This todo file is for developer-side use.
 - [x] **Phase M15 — Run Summary**: Summary sections, results table, missed reveal for Pro, Play again, Play a duel, Practise again.
 - [x] **Phase M16 — Socket Client**: Token handshake, protocol gate, takeover, reconnects, app background and foreground. (copy list E)
 - [x] **Phase M17 — Duel Lobby & Rooms**: Searching, pairing, filters, coin flip, no opponent; create, share, join and expired rooms. (copy list F)
-- [ ] 🟡 **Phase M18 — Duel Play & Result**: Alternating turns, their turn, drop and resume overlays, forfeit on back, result and replay actions. — partially done: M18b (drops and resume, the reducer test)
+- [x] **Phase M18 — Duel Play & Result**: Alternating turns, their turn, drop and resume overlays, forfeit on back, result and replay actions.
 - [ ] **Phase M19 — Profile**: Record, stat tiles, paged history, pull to refresh, guest strip with upgrade, sign out, `?state=`.
 - [ ] **Phase M20 — Archive & Pro**: Archive search, filter sheet, fixture rows with Play and Practise, Pro locks, `/pro` table, `?state=`.
 - [ ] **Phase M21 — System States**: Update-required screen with store link, empty pool widen, rate limit, connection lost, offline notice.
