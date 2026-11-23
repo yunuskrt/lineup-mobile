@@ -3,6 +3,7 @@ import { type LayoutChangeEvent, View } from 'react-native';
 import Pitch from '@/components/pitch/Pitch';
 import GridSlot from '@/components/pitch/squad-grid/GridSlot';
 import { Text } from '@/components/ui/text';
+import { useMotionPolicy } from '@/hooks/use-motion-policy';
 import { LOADING_FORMATION, slotLayout } from '@/lib/formation';
 import { newRevealIds } from '@/lib/new-reveals';
 import { discSize, fitPitch, labelSize, slotWidth } from '@/lib/squad-grid';
@@ -27,6 +28,9 @@ const SquadGrid = ({
   pulse,
   isLoading = false,
 }: Props) => {
+  const runs = useMotionPolicy();
+  // Missed slots already there as the board opens are drawn at once
+  const [hadMissedOnMount] = useState(missed !== undefined);
   const [box, setBox] = useState({ width: 0, height: 0 });
   const [previousRevealed, setPreviousRevealed] = useState(revealed);
   const [wasLoading, setWasLoading] = useState(isLoading);
@@ -55,6 +59,13 @@ const SquadGrid = ({
   const missedBySlot = new Map(
     (missed ?? []).map((player) => [player.slot, player]),
   );
+  // Goalkeeper first: the order the slots appear in
+  const missedRankBySlot = new Map(
+    [...missedBySlot.keys()]
+      .sort((a, b) => a - b)
+      .map((slot, rank) => [slot, rank]),
+  );
+  const isRevealAnimated = !hadMissedOnMount && runs('missedReveal');
 
   const measure = (event: LayoutChangeEvent) => {
     const { width: boxWidth, height: boxHeight } = event.nativeEvent.layout;
@@ -90,6 +101,11 @@ const SquadGrid = ({
                     size={size}
                     player={player}
                     missedPlayer={missedBySlot.get(point.slot)}
+                    missedRank={
+                      isRevealAnimated
+                        ? (missedRankBySlot.get(point.slot) ?? 0)
+                        : null
+                    }
                     isLoading={isLoading}
                     isNew={player !== undefined && newIds.has(player.id)}
                     pulseKey={

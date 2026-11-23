@@ -15,10 +15,16 @@ type Props = {
   size?: ProLockSize;
   // Read after the label, as the web's aria-describedby
   caption?: string;
+  isFullWidth?: boolean;
 };
 
 // Flat and muted, never presses: it does nothing
-const ProLockButton = ({ label, size = 'default', caption }: Props) => {
+const ProLockButton = ({
+  label,
+  size = 'default',
+  caption,
+  isFullWidth = false,
+}: Props) => {
   return (
     <View
       accessible
@@ -30,7 +36,8 @@ const ProLockButton = ({ label, size = 'default', caption }: Props) => {
         BUTTON_FACE,
         BUTTON_VARIANT.secondary,
         BUTTON_SIZE[size],
-        'self-start rounded-md',
+        isFullWidth ? 'self-stretch' : 'self-start',
+        'rounded-md',
       )}
     >
       <Text className={cn(BUTTON_LABEL[size], 'text-fg-muted')}>{label}</Text>

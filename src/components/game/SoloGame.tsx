@@ -27,7 +27,7 @@ const SoloGame = ({}: Props) => {
   const routeParams = useLocalSearchParams<RouteParams>();
   // A snapshot, as the web's: the run reads its setup once
   const [params, setParams] = useState(() => searchParamsOf(routeParams));
-  const { state, chooseSide, submitGuess, quit, retry, widen } =
+  const { state, chooseSide, submitGuess, quit, retry, widen, revealMissed } =
     useSoloRun(params);
   const directory = usePlayerDirectory(state.offer?.sessionId ?? null);
   const allowance = useSoloAllowance();
@@ -119,6 +119,7 @@ const SoloGame = ({}: Props) => {
         onGateSecondaryAction={leave}
         onQuit={handleQuit}
         onBackToPlay={leave}
+        onRevealMissed={revealMissed}
       />
       <QuitDialog
         // Closes in the render the run ends in

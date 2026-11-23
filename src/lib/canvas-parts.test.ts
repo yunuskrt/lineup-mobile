@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   gateSize,
   laterGatePart,
+  LATER_SUMMARY_ACTIONS,
   laterPartLine,
   laterRailPart,
 } from '@/lib/canvas-parts';
@@ -42,9 +43,9 @@ describe('laterGatePart', () => {
 });
 
 describe('laterRailPart', () => {
-  it('names the run summary once a solo run ends', () => {
-    expect(laterRailPart(viewOf('solo', 'run-over'))?.phase).toBe('M15');
-    expect(laterRailPart(viewOf('solo', 'summary-loading'))?.phase).toBe('M15');
+  it('names nothing once a solo run ends: the summary is drawn', () => {
+    expect(laterRailPart(viewOf('solo', 'run-over'))).toBeNull();
+    expect(laterRailPart(viewOf('solo', 'summary-loading'))).toBeNull();
   });
 
   it('names the duel result once a duel ends', () => {
@@ -59,8 +60,8 @@ describe('laterRailPart', () => {
 
 describe('laterPartLine', () => {
   it('says which phase builds it', () => {
-    expect(laterPartLine({ phase: 'M15', name: 'run summary' })).toBe(
-      'Built in M15: the run summary.',
+    expect(laterPartLine(LATER_SUMMARY_ACTIONS)).toBe(
+      'Built in M15b: the summary actions.',
     );
   });
 });

@@ -22,6 +22,7 @@ import GateCountdown from '@/components/game/game-canvas/GateCountdown';
 import GateSeconds from '@/components/game/game-canvas/GateSeconds';
 import LifeLostFlash from '@/components/game/LifeLostFlash';
 import MatchHeader from '@/components/game/MatchHeader';
+import RunSummary from '@/components/game/RunSummary';
 import SidePickCard from '@/components/game/SidePickCard';
 import SoundToggle from '@/components/game/SoundToggle';
 import SquadGrid from '@/components/pitch/SquadGrid';
@@ -34,6 +35,7 @@ import { useGameSounds } from '@/hooks/use-game-sounds';
 import { useKeyboardFrame } from '@/hooks/use-keyboard-frame';
 import {
   gateSize,
+  LATER_SUMMARY_ACTIONS,
   laterGatePart,
   laterPartLine,
   laterRailPart,
@@ -49,6 +51,10 @@ import type { LaterPart } from '@/types/canvas-gate';
 
 // The rail's own gap above the home indicator
 const RAIL_BOTTOM_GAP = 12;
+
+// The turf's share of the window once a run ends, as the design sketch
+const SUMMARY_TURF_SHARE = 0.4;
+const SHORT_SUMMARY_TURF_SHARE = 0.3;
 
 type NoticeParts = { icon?: ReactNode; detail?: ReactNode; body?: ReactNode };
 
@@ -98,8 +104,9 @@ type Props = {
   onGateSecondaryAction?: () => void;
   // Without it, quitting goes back to /play
   onQuit?: () => void;
-  // Under the summary's notice until M15 builds its actions
+  // In the summary's pinned row until M15b builds its actions
   onBackToPlay?: () => void;
+  onRevealMissed?: () => void;
 };
 
 // One board: scoreboard, turf and rail, edge to edge
@@ -113,11 +120,13 @@ const GameCanvas = ({
   onGateSecondaryAction = () => {},
   onQuit,
   onBackToPlay,
+  onRevealMissed = () => {},
 }: Props) => {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
   useGameSounds(view);
-  const isShort = isShortScreen(useWindowDimensions().height);
+  const windowHeight = useWindowDimensions().height;
+  const isShort = isShortScreen(windowHeight);
   const keyboard = useKeyboardFrame();
   // The band's height with no list open; the list floats over the turf
   const [bandHeight, setBandHeight] = useState(0);
@@ -130,7 +139,8 @@ const GameCanvas = ({
   const hasQuit = summary === null && result === null;
   const found = result?.found ?? view.found;
   const railPart = laterRailPart(view);
-  const isBand = keyboard.isShown && railPart === null;
+  // Only the live rail rides the keys; a summary has no input
+  const isBand = keyboard.isShown && railPart === null && soloEnd === null;
   const isCompact = isShort || isBand;
   // In the flow until measured, then over the turf with its room held
   const isFloating = isBand && bandHeight > 0;
@@ -220,7 +230,22 @@ const GameCanvas = ({
             <MatchHeader match={view.match} isCompact={isCompact} hasControls />
           </View>
           <View className="flex-1">
-            <View className="flex-1 bg-turf p-2">
+            <View
+              className={cn('bg-turf p-2', soloEnd === null && 'flex-1')}
+              // A share of the window, known only at run time
+              style={
+                soloEnd
+                  ? {
+                      height: Math.round(
+                        windowHeight *
+                          (isShort
+                            ? SHORT_SUMMARY_TURF_SHARE
+                            : SUMMARY_TURF_SHARE),
+                      ),
+                    }
+                  : undefined
+              }
+            >
               {view.match ? <FoundCount found={found} /> : null}
               <SquadGrid
                 formation={view.match?.formation ?? LOADING_FORMATION}
@@ -236,62 +261,86 @@ const GameCanvas = ({
                 />
               ) : null}
             </View>
-            {/* Holds the band's room, so a list opening never moves the turf */}
-            {isFloating ? (
-              <View
-                // The band's measured height, known only at run time
-                style={{ height: bandHeight }}
-              />
-            ) : null}
-            <View
-              onLayout={isBand ? measureBand : undefined}
-              className={
-                isFloating
-                  ? 'absolute inset-x-0 bottom-0 border-t-2 border-transparent px-4 py-2'
-                  : isBand
-                    ? 'border-t-2 border-line bg-surface px-4 py-2'
-                    : 'border-t-2 border-line bg-surface px-4 pt-3'
-              }
-              // The home indicator's inset is known only at run time
-              style={
-                isBand
-                  ? undefined
-                  : { paddingBottom: insets.bottom + RAIL_BOTTOM_GAP }
-              }
-            >
-              {/* The band's face stays its own height as the list opens */}
-              {isFloating ? (
-                <View
-                  pointerEvents="none"
-                  className="absolute inset-x-0 bottom-0 border-t-2 border-line bg-surface"
-                  // The band's measured height, known only at run time
-                  style={{ height: bandHeight }}
+            {soloEnd ? (
+              <View className="flex-1 border-t-2 border-line bg-surface">
+                <RunSummary
+                  end={soloEnd}
+                  bottomInset={insets.bottom + RAIL_BOTTOM_GAP}
+                  onRevealMissed={onRevealMissed}
+                  actions={
+                    <View className="gap-3">
+                      {laterNotice(LATER_SUMMARY_ACTIONS)}
+                      {onBackToPlay ? (
+                        <Button
+                          label="Back to play"
+                          variant="secondary"
+                          onPress={onBackToPlay}
+                        />
+                      ) : null}
+                    </View>
+                  }
                 />
-              ) : null}
-              {railPart ? (
-                <View className="gap-3">
-                  {laterNotice(railPart)}
-                  {onBackToPlay ? (
-                    <Button
-                      label="Back to play"
-                      variant="secondary"
-                      onPress={onBackToPlay}
+              </View>
+            ) : (
+              <>
+                {/* Holds the band's room, so a list opening never moves the turf */}
+                {isFloating ? (
+                  <View
+                    // The band's measured height, known only at run time
+                    style={{ height: bandHeight }}
+                  />
+                ) : null}
+                <View
+                  onLayout={isBand ? measureBand : undefined}
+                  className={
+                    isFloating
+                      ? 'absolute inset-x-0 bottom-0 border-t-2 border-transparent px-4 py-2'
+                      : isBand
+                        ? 'border-t-2 border-line bg-surface px-4 py-2'
+                        : 'border-t-2 border-line bg-surface px-4 pt-3'
+                  }
+                  // The home indicator's inset is known only at run time
+                  style={
+                    isBand
+                      ? undefined
+                      : { paddingBottom: insets.bottom + RAIL_BOTTOM_GAP }
+                  }
+                >
+                  {/* The band's face stays its own height as the list opens */}
+                  {isFloating ? (
+                    <View
+                      pointerEvents="none"
+                      className="absolute inset-x-0 bottom-0 border-t-2 border-line bg-surface"
+                      // The band's measured height, known only at run time
+                      style={{ height: bandHeight }}
                     />
                   ) : null}
+                  {railPart ? (
+                    <View className="gap-3">
+                      {laterNotice(railPart)}
+                      {onBackToPlay ? (
+                        <Button
+                          label="Back to play"
+                          variant="secondary"
+                          onPress={onBackToPlay}
+                        />
+                      ) : null}
+                    </View>
+                  ) : (
+                    <ActiveRail
+                      view={view}
+                      guess={guess}
+                      suggestions={suggestions}
+                      onGuessChange={onGuessChange}
+                      onGuessSubmit={onGuessSubmit}
+                      isBand={isBand}
+                      canFocus={view.gate === null}
+                      onListOpenChange={setIsListOpen}
+                    />
+                  )}
                 </View>
-              ) : (
-                <ActiveRail
-                  view={view}
-                  guess={guess}
-                  suggestions={suggestions}
-                  onGuessChange={onGuessChange}
-                  onGuessSubmit={onGuessSubmit}
-                  isBand={isBand}
-                  canFocus={view.gate === null}
-                  onListOpenChange={setIsListOpen}
-                />
-              )}
-            </View>
+              </>
+            )}
           </View>
         </View>
       </CanvasGate>
