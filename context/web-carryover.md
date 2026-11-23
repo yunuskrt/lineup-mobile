@@ -68,7 +68,7 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | `src/lib/dev/archive-states.test.ts` | M02 | word for word |
 | `src/lib/dev/archive-states.ts` | M02 | word for word |
 | `src/lib/dev/canvas-states.test.ts` | M02 | word for word |
-| `src/lib/dev/canvas-states.ts` | M02, M14b, M18a | adapted (M14b): adds `solo-failed-sync`, a sync that failed mid-run, so a failed step's Try again gate has a dev state. (M18a): `room-result` and `room-result-free` build on `resultState` (`roomResultState`), so the board has its match; the web's had no session, so the header and pitch stayed loading |
+| `src/lib/dev/canvas-states.ts` | M02, M14b, M18a, M18b | adapted (M14b): adds `solo-failed-sync`, a sync that failed mid-run, so a failed step's Try again gate has a dev state. (M18a): `room-result` and `room-result-free` build on `resultState` (`roomResultState`), so the board has its match; the web's had no session, so the header and pitch stayed loading. (M18b): adds `connection-closed`, `ended-away`, `ended-away-found` and `called-off`, each built by `duelSessionReducer` from the events a drop brings (`droppedState`) |
 | `src/lib/dev/profile-states.test.ts` | M02 | word for word |
 | `src/lib/dev/profile-states.ts` | M02 | word for word |
 | `src/lib/dev/samples.ts` | M02 | word for word |

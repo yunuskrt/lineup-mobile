@@ -11,7 +11,11 @@ import {
   sampleAllowance,
   samplePlayer,
 } from '@/lib/dev/samples';
-import { duelCanvasView, INITIAL_DUEL_SESSION } from '@/lib/duel-session';
+import {
+  duelCanvasView,
+  duelSessionReducer,
+  INITIAL_DUEL_SESSION,
+} from '@/lib/duel-session';
 import { FEEDBACK_MESSAGES } from '@/lib/feedback';
 import { filterSummary, lobbyGate } from '@/lib/lobby';
 import { capLine } from '@/lib/solo-allowance';
@@ -38,10 +42,11 @@ import type {
   DuelActor,
   DuelNamedPlayer,
   DuelResult,
+  DuelSession,
   FilterSubmission,
 } from '@/types/duel';
 import type { DuelLobbyView } from '@/types/duel-lobby';
-import type { DuelSessionState } from '@/types/duel-session';
+import type { DuelSessionEvent, DuelSessionState } from '@/types/duel-session';
 import type { Lives, RoundTiming } from '@/types/game';
 import type { MatchIdentity } from '@/types/match';
 import type { FoundPlayer, NamedPlayer, RevealedPlayer } from '@/types/player';
@@ -1153,6 +1158,97 @@ export const RESULT_STATES = {
 
 const THEIR_TURN = { turn: 'opponent' } as const;
 
+const CLOSED_ERROR: ApiError = {
+  code: 'network',
+  message: 'The duel connection closed.',
+  retryAfterMs: null,
+};
+
+function sampleDuelSession(now: number): DuelSession {
+  return {
+    sessionId: 'sample-duel',
+    match: SAMPLE_MATCH,
+    you: SAMPLE_YOU,
+    opponent: SAMPLE_OPPONENT,
+    turn: 'you',
+    round: roundLeaving(9_000, now),
+    found: DUEL_FINDERS.map(([slot, foundBy]) => ({
+      ...samplePlayer(FORMATION, slot),
+      foundBy,
+    })),
+  };
+}
+
+// M18b: the reducer builds each from the events a drop brings
+function droppedState(
+  description: string,
+  events: (now: number) => DuelSessionEvent[],
+): CanvasState<DuelCanvasView> {
+  return {
+    description,
+    build: (now) => ({
+      frame: {
+        view: duelCanvasView(
+          events(now).reduce(duelSessionReducer, {
+            ...INITIAL_DUEL_SESSION,
+            filters: SAMPLE_FILTERS,
+            options: SAMPLE_FILTER_OPTIONS,
+          }),
+          SAMPLE_YOU,
+        ),
+        guess: '',
+      },
+    }),
+  };
+}
+
+// Away past the window: dropped, then the socket closed
+function awayEvents(now: number): DuelSessionEvent[] {
+  return [
+    { type: 'matchReady', session: sampleDuelSession(now) },
+    { type: 'connectionDropped', deadline: now - 1_000 },
+    { type: 'closed', error: CLOSED_ERROR, at: now },
+  ];
+}
+
+const DROP_STATES = {
+  'connection-closed': droppedState(
+    'Away past the window: the socket closed, with Try again.',
+    awayEvents,
+  ),
+  'ended-away': droppedState(
+    'Back after the duel ended: checking your history.',
+    (now) => [
+      ...awayEvents(now),
+      { type: 'resuming' },
+      { type: 'connectionRestored' },
+      { type: 'resumeMissed' },
+    ],
+  ),
+  'ended-away-found': droppedState(
+    'The result read from history: Play again, View profile.',
+    (now) => [
+      ...awayEvents(now),
+      { type: 'resuming' },
+      { type: 'connectionRestored' },
+      { type: 'resumeMissed' },
+      {
+        type: 'awayResultRead',
+        result: { status: 'found', outcome: 'loss', foundCount: 4 },
+      },
+    ],
+  ),
+  'called-off': droppedState(
+    'A drop during the filters: the match is called off.',
+    () => [
+      { type: 'queued' },
+      { type: 'paired', opponent: FRESH_OPPONENT },
+      { type: 'filtersOpened' },
+      { type: 'connectionRestored' },
+    ],
+  ),
+} satisfies Record<string, CanvasState<DuelCanvasView>>;
+
 export const DUEL_CANVAS_STATES: Record<string, CanvasState<DuelCanvasView>> = {
   loading: {
     description: 'Header and grid skeletons, both clocks stopped.',
@@ -1311,6 +1407,7 @@ export const DUEL_CANVAS_STATES: Record<string, CanvasState<DuelCanvasView>> = {
       };
     },
   },
+  ...DROP_STATES,
   'their-life-lost': {
     description: 'Their clock runs out: their pip empties, no flash.',
     build: (now) => ({
