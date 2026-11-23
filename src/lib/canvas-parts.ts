@@ -21,10 +21,11 @@ export function gateSize(view: CanvasView): GateSize {
   return view.gate?.sidePick ? 'wide' : 'narrow';
 }
 
-// The gate's body, while its phase is still ahead
+// The gate's body, while its phase is still ahead: the room's steps
 export function laterGatePart(view: CanvasView): LaterPart | null {
-  if (view.mode === 'duel' && view.lobby) {
-    return { phase: 'M17', name: 'duel lobby' };
+  const step = view.mode === 'duel' ? view.lobby?.step : undefined;
+  if (step === 'roomWaiting' || step === 'roomExpired') {
+    return { phase: 'M17b', name: 'room' };
   }
   return null;
 }

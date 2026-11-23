@@ -14,6 +14,7 @@ import { useIsFocused } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { CircleAlert, Hammer, WifiOff } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LobbyPanel from '@/components/duel/LobbyPanel';
 import CanvasGate from '@/components/game/CanvasGate';
 import FoundCount from '@/components/game/FoundCount';
 import ActiveRail from '@/components/game/game-canvas/ActiveRail';
@@ -47,6 +48,7 @@ import { cn } from '@/lib/utils';
 import { isShortScreen } from '@/lib/welcome';
 import type { CanvasGateView, CanvasView } from '@/types/canvas';
 import type { LaterPart } from '@/types/canvas-gate';
+import type { LobbyAction } from '@/types/duel-lobby';
 
 // The rail's own gap above the home indicator
 const RAIL_BOTTOM_GAP = 12;
@@ -109,6 +111,7 @@ type Props = {
   onBackToPlay?: () => void;
   onPlayDuel?: () => void;
   onRevealMissed?: () => void;
+  onLobbyAction?: (action: LobbyAction) => void;
 };
 
 // One board: scoreboard, turf and rail, edge to edge
@@ -126,6 +129,7 @@ const GameCanvas = ({
   onBackToPlay,
   onPlayDuel = () => {},
   onRevealMissed = () => {},
+  onLobbyAction = () => {},
 }: Props) => {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
@@ -197,13 +201,20 @@ const GameCanvas = ({
         detail={notice.detail}
         size={gateSize(view)}
         body={
-          view.gate?.sidePick ? (
+          gatePart ? (
+            laterNotice(gatePart)
+          ) : view.mode === 'duel' && view.lobby ? (
+            <LobbyPanel
+              lobby={view.lobby}
+              you={view.you}
+              opponent={view.opponent}
+              onAction={onLobbyAction}
+            />
+          ) : view.gate?.sidePick ? (
             <SidePickCard
               sidePick={view.gate.sidePick}
               onPick={(side) => onGateAction(side)}
             />
-          ) : gatePart ? (
-            laterNotice(gatePart)
           ) : (
             notice.body
           )
