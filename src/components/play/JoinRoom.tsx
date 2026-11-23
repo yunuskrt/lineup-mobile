@@ -81,7 +81,8 @@ const JoinRoom = ({ filterParams, initialCode }: Props) => {
             caretHidden
             accessibilityLabel="Room code"
             accessibilityHint={showsHint ? ROOM_CODE_HINT : undefined}
-            className="absolute inset-0 opacity-0"
+            // Not opacity-0: iOS ignores taps on a view below 0.01 alpha
+            className="absolute inset-0 opacity-[0.02]"
           />
         </View>
         <Button

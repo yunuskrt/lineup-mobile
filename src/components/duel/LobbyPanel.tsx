@@ -3,6 +3,8 @@ import CoinFlip from '@/components/duel/lobby-panel/CoinFlip';
 import Filters from '@/components/duel/lobby-panel/Filters';
 import NoOpponent from '@/components/duel/lobby-panel/NoOpponent';
 import Paired from '@/components/duel/lobby-panel/Paired';
+import RoomExpired from '@/components/duel/lobby-panel/RoomExpired';
+import RoomWaiting from '@/components/duel/lobby-panel/RoomWaiting';
 import Searching from '@/components/duel/lobby-panel/Searching';
 import type { DuelPlayer } from '@/types/duel';
 import type { DuelLobbyView, LobbyAction } from '@/types/duel-lobby';
@@ -28,10 +30,10 @@ const LobbyPanel = ({ lobby, you, opponent, onAction }: Props) => {
       return <CoinFlip lobby={lobby} />;
     case 'noOpponent':
       return <NoOpponent onAction={onAction} />;
-    // The canvas names these as M17b's for now
     case 'roomWaiting':
+      return <RoomWaiting lobby={lobby} onAction={onAction} />;
     case 'roomExpired':
-      return null;
+      return <RoomExpired onAction={onAction} />;
   }
 };
 

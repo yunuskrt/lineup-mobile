@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -73,5 +73,29 @@ From the M17 row of the Web References table in `context/todo.md`; read-only in 
   - a wrong code and your own code, both refused;
   - the room dev states at 390 × 844 and 375 × 667;
   - `npm run lint`, `typecheck`, `test`, `build` and `npx expo-doctor`.
+
+**Open question settled:** Share sends the code only (a), the default; nothing was said at load. The message comes from `src/lib/room-share.ts` (`roomShareMessage`, with a test).
+
+**Deviations recorded during implementation**
+
+- **`joining` keeps M17a's `Searching` panel:** the copied `lobby.ts` already gives the gate its own title ("Joining room K7QM2X…"), so no separate component was needed.
+- **`laterGatePart` is removed:** no gate part is left for a later phase. Its tests go with it, and the canvas no longer checks for one.
+- **RoomWaiting's parts sit in `lobby-panel/room-waiting/`** (`CodeBoxes`, `ClosesIn`, `use-copy.ts`), per the one-component-per-file rule. The web keeps them flat in `lobby-panel/`. There's no separate `CopyButton`: the kit's `Button` takes the check icon and the "Copied" label.
+- **`spokenCode`** (in `room-share.ts`) spaces the code for screen readers, as the web's `aria-label` does.
+- **The gate's line still says "Send them the code or the link"** (the copied `lobby.ts`), while Share sends the code only until M22. Left as the copy stands.
+- **Fix to M13c's `JoinRoom`, found in your iOS check:** the code field couldn't take focus on iOS. Its hidden `TextInput` was `opacity-0`, and UIKit skips views below 0.01 alpha when it hit-tests, so taps fell through to the boxes. Android delivers them, which is why the emulator never showed it. It's now `opacity-[0.02]`, invisible in practice; `text-transparent` was tried first and left the text showing on Android.
+
+**Follow-ups**
+
+- **"Closes in" can read above 10:00** on a device whose clock is behind (the emulator was 19 seconds slow). The server clock is synced only through the queue's round trip, so a room shows the device's skew. It's presentation only, and the web behaves the same; for M24, or a sync on `roomCreated`.
+- **Your own code and a live room expiry** were checked on the dev states (`room-own`, `room-expired`), not live: joining your own room needs a second device on the same account, and an expiry takes 10 minutes.
+- **A room link opened while a duel route is already open** is ignored, as `DuelGame` reads its params once. Opening links properly is M22's.
+
+- **Verified on Android (Claude, 2026-11-24), against the Node opponent:**
+  - **the host side:** Create room (`?room=create`) showed code U7MXKB with the filters and "Closes in"; Copy code turned "Copied" with a check; Share opened the system sheet with "Join my Lineup duel with code U7MXKB."; the script joined by the code, the phone showed "Playing your room", and the match started;
+  - **the guest side:** the script created room UYBBF4, and the phone joined it by the code into a match;
+  - **a wrong code** (ZZZZZZ): "Couldn't join the room" with the server's reason, then Back to play opened step 1 with Duel picked and ZZZZZZ in the code box;
+  - the 8 room dev states at 390 × 844, and room waiting at 375 × 667.
+- **Verified on iOS by the user (2026-11-24):** after the code-field fix, typing a code into the boxes; Create room with Copy code and Share; a browser joining the phone's room; the phone joining a room made on the web; and a wrong code refused, with the code kept.
 
 ## History
