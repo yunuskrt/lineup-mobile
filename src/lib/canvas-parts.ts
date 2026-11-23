@@ -29,13 +29,17 @@ export function laterGatePart(view: CanvasView): LaterPart | null {
   return null;
 }
 
-// What replaces the rail once the game is over
+// What replaces the rail once a duel is over; the summary is drawn
 export function laterRailPart(view: CanvasView): LaterPart | null {
-  if (view.end === null) return null;
-  return view.mode === 'solo'
-    ? { phase: 'M15', name: 'run summary' }
-    : { phase: 'M18', name: 'duel result' };
+  if (view.mode === 'solo' || view.end === null) return null;
+  return { phase: 'M18', name: 'duel result' };
 }
+
+// The summary's pinned row, until its actions are built
+export const LATER_SUMMARY_ACTIONS: LaterPart = {
+  phase: 'M15b',
+  name: 'summary actions',
+};
 
 export function laterPartLine({ phase, name }: LaterPart): string {
   return `Built in ${phase}: the ${name}.`;

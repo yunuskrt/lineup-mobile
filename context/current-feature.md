@@ -42,3 +42,4 @@ Not Started
 - M13c Start & Rooms: summary, Start hand-off, Create room, join by code.
 - M14a Side Pick & Loop: copy list D, side pick, solo loop, quit dialog.
 - M14b Gates & Practice: gate actions, empty-pool widen, practice runs.
+- M15a Summary Panel: outcome, stats, named table, missed reveal, layout.

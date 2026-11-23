@@ -46,6 +46,18 @@ const CanvasPreview = ({ mode, state }: CanvasPreviewProps) => {
     return () => clearTimeout(timer);
   }, [snapshot]);
 
+  // Snapshots reveal locally; there's no run to tell
+  function revealMissed() {
+    setFrame((current) => {
+      const { view } = current;
+      if (view.mode !== 'solo' || view.end?.status !== 'ready') return current;
+      return {
+        ...current,
+        view: { ...view, end: { ...view.end, isMissedRevealed: true } },
+      };
+    });
+  }
+
   function openGate() {
     const started = buildSnapshot(mode, AFTER_GATE_STATE);
     setSnapshot(started);
@@ -65,6 +77,8 @@ const CanvasPreview = ({ mode, state }: CanvasPreviewProps) => {
         onGuessSubmit={() => {}}
         onGateAction={openGate}
         onQuit={() => router.back()}
+        onBackToPlay={() => router.back()}
+        onRevealMissed={revealMissed}
       />
       {/* Clear of Expo's dev bubble: under the full scoreboard, on the turf */}
       {mode === 'duel' ? (
