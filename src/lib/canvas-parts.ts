@@ -21,12 +21,6 @@ export function gateSize(view: CanvasView): GateSize {
   return view.gate?.sidePick ? 'wide' : 'narrow';
 }
 
-// What replaces the rail once a duel is over; the summary is drawn
-export function laterRailPart(view: CanvasView): LaterPart | null {
-  if (view.mode === 'solo' || view.end === null) return null;
-  return { phase: 'M18', name: 'duel result' };
-}
-
 export function laterPartLine({ phase, name }: LaterPart): string {
   return `Built in ${phase}: the ${name}.`;
 }

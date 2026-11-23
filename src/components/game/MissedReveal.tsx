@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AccessibilityInfo, View } from 'react-native';
-import { SUMMARY_SECTION } from '@/components/game/run-summary/styles';
+import { SUMMARY_SECTION } from '@/components/game/styles';
 import ProLockButton from '@/components/pro/ProLockButton';
 import ProLockCaption from '@/components/pro/ProLockCaption';
 import { Button } from '@/components/ui/button';

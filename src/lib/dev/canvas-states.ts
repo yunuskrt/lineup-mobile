@@ -1018,19 +1018,11 @@ export const ROOM_STATES = {
       },
     }),
   ),
-  'room-result': roomState(
+  'room-result': roomResultState(
     'A room game ended: New room and Back to play.',
-    () => ({
-      phase: 'finished',
-      result: resultOf('win', DUEL_FINDERS, { you: 2, opponent: 0 }),
-    }),
   ),
-  'room-result-free': roomState(
+  'room-result-free': roomResultState(
     'A Free player after a room game: Back to play, New room locked.',
-    () => ({
-      phase: 'finished',
-      result: resultOf('win', DUEL_FINDERS, { you: 2, opponent: 0 }),
-    }),
     'locked',
   ),
 } satisfies Record<string, CanvasState<DuelCanvasView>>;
@@ -1107,6 +1099,27 @@ function resultState(
         guess: '',
       },
     }),
+  };
+}
+
+// A room game's result on the board, as resultState: New room leads
+function roomResultState(
+  description: string,
+  hostAccess?: ProAccess,
+): CanvasState<DuelCanvasView> {
+  const result = resultOf('win', DUEL_FINDERS, { you: 2, opponent: 0 });
+  const base = resultState(description, result);
+  return {
+    description,
+    build: (now) => {
+      const { frame } = base.build(now);
+      return {
+        frame: {
+          ...frame,
+          view: { ...frame.view, isPrivate: true, hostAccess },
+        },
+      };
+    },
   };
 }
 

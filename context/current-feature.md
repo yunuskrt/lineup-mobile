@@ -47,3 +47,4 @@ Not Started
 - M16 Socket Client: copy list E, real duel client, /dev/socket, takeover.
 - M17a Duel Route & Queue: copy list F, DuelGame, lobby panel, forfeit.
 - M17b Rooms: room code, copy, share, expiry, joins, iOS code-field fix.
+- M18a Duel Result: outcome tones, tally, shared result frame, room states.

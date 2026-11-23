@@ -1,10 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
-import {
-  OUTCOME_BOX,
-  STATS_BOX,
-  SUMMARY_SECTION,
-} from '@/components/game/run-summary/styles';
+import { STATS_BOX } from '@/components/game/run-summary/styles';
+import { OUTCOME_BOX, SUMMARY_SECTION } from '@/components/game/styles';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ROWS = [0, 1, 2];
