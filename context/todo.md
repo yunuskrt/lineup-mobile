@@ -40,7 +40,7 @@ This todo file is for developer-side use.
 
 - [x] **Phase M13 — Play Setup**: `/play` steps (Mode, Filters, Start), Practice card, club search, runs-left line, join by code, Create room.
 - [x] **Phase M14 — Solo Run**: Side pick, 15s server-clock loop, quit dialog, lost-run, cap and picked-match gates, practice runs. (copy list D)
-- [ ] 🟡 **Phase M15 — Run Summary**: Summary sections, results table, missed reveal for Pro, Play again, Play a duel, Practise again. — partially done: M15b result actions left
+- [x] **Phase M15 — Run Summary**: Summary sections, results table, missed reveal for Pro, Play again, Play a duel, Practise again.
 - [ ] **Phase M16 — Socket Client**: Token handshake, protocol gate, takeover, reconnects, app background and foreground. (copy list E)
 - [ ] **Phase M17 — Duel Lobby & Rooms**: Searching, pairing, filters, coin flip, no opponent; create, share, join and expired rooms. (copy list F)
 - [ ] **Phase M18 — Duel Play & Result**: Alternating turns, their turn, drop and resume overlays, forfeit on back, result and replay actions.

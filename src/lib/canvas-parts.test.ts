@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   gateSize,
   laterGatePart,
-  LATER_SUMMARY_ACTIONS,
   laterPartLine,
   laterRailPart,
 } from '@/lib/canvas-parts';
@@ -60,8 +59,8 @@ describe('laterRailPart', () => {
 
 describe('laterPartLine', () => {
   it('says which phase builds it', () => {
-    expect(laterPartLine(LATER_SUMMARY_ACTIONS)).toBe(
-      'Built in M15b: the summary actions.',
+    expect(laterPartLine({ phase: 'M18', name: 'duel result' })).toBe(
+      'Built in M18: the duel result.',
     );
   });
 });

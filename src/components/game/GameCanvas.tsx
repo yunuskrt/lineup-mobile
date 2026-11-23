@@ -35,7 +35,6 @@ import { useGameSounds } from '@/hooks/use-game-sounds';
 import { useKeyboardFrame } from '@/hooks/use-keyboard-frame';
 import {
   gateSize,
-  LATER_SUMMARY_ACTIONS,
   laterGatePart,
   laterPartLine,
   laterRailPart,
@@ -104,8 +103,11 @@ type Props = {
   onGateSecondaryAction?: () => void;
   // Without it, quitting goes back to /play
   onQuit?: () => void;
-  // In the summary's pinned row until M15b builds its actions
+  onPlayAgain?: () => void;
+  onChangeFilters?: () => void;
+  // The summary's Back to play; Change filters when unset
   onBackToPlay?: () => void;
+  onPlayDuel?: () => void;
   onRevealMissed?: () => void;
 };
 
@@ -119,7 +121,10 @@ const GameCanvas = ({
   onGateAction,
   onGateSecondaryAction = () => {},
   onQuit,
+  onPlayAgain = () => {},
+  onChangeFilters = () => {},
   onBackToPlay,
+  onPlayDuel = () => {},
   onRevealMissed = () => {},
 }: Props) => {
   const insets = useSafeAreaInsets();
@@ -267,18 +272,13 @@ const GameCanvas = ({
                   end={soloEnd}
                   bottomInset={insets.bottom + RAIL_BOTTOM_GAP}
                   onRevealMissed={onRevealMissed}
-                  actions={
-                    <View className="gap-3">
-                      {laterNotice(LATER_SUMMARY_ACTIONS)}
-                      {onBackToPlay ? (
-                        <Button
-                          label="Back to play"
-                          variant="secondary"
-                          onPress={onBackToPlay}
-                        />
-                      ) : null}
-                    </View>
-                  }
+                  capLine={view.mode === 'solo' ? view.capLine : undefined}
+                  isPicked={view.mode === 'solo' && view.isPicked}
+                  isPractice={view.mode === 'solo' && view.isPractice}
+                  onPlayAgain={onPlayAgain}
+                  onChangeFilters={onChangeFilters}
+                  onBackToPlay={onBackToPlay}
+                  onPlayDuel={onPlayDuel}
                 />
               </View>
             ) : (

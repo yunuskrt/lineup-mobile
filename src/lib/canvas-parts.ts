@@ -35,12 +35,6 @@ export function laterRailPart(view: CanvasView): LaterPart | null {
   return { phase: 'M18', name: 'duel result' };
 }
 
-// The summary's pinned row, until its actions are built
-export const LATER_SUMMARY_ACTIONS: LaterPart = {
-  phase: 'M15b',
-  name: 'summary actions',
-};
-
 export function laterPartLine({ phase, name }: LaterPart): string {
   return `Built in ${phase}: the ${name}.`;
 }

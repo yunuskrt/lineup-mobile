@@ -2,7 +2,7 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
@@ -75,5 +75,27 @@ From the M15 row of the Web References table in `context/todo.md`; read-only in 
   - the same four flows, and Android's back button on a summary;
   - the dev states at 390 × 844 and 375 × 667, checking that no label wraps;
   - `npm run lint`, `typecheck`, `test`, `build` and `npx expo-doctor`.
+
+**Deviations recorded during implementation**
+
+- **The allowance needed no change:** `useSoloRun` already calls `refreshSoloAllowance` when the summary arrives (and on the side pick), so the fifth run's summary reads a fresh count.
+- **The archive pair stacks:** "Back to the archive" wraps beside "Play it again" at 390pt in large, so with that secondary the two buttons stack full width, primary on top. It's a rule on the layout (`secondary === 'backToArchive'`), not a measurement. Every other pair fits side by side at 390 × 844 and 375 × 667.
+- **`RunSummary` takes `ResultActionsProps`** in place of M15a's `actions` slot, and renders `ResultActions` in its pinned row.
+- **`LATER_SUMMARY_ACTIONS` was removed** with the placeholder. `laterRailPart` already named only the duel result, after M15a.
+- **The locked New room puts its caption and See Pro under the row,** not in the half-width cell. M18 checks it.
+
+**Follow-ups**
+
+- A `lineup://play/solo?…` link opened over a game in progress doesn't replace it: `SoloGame` reads its params once (M14). It came up in testing, not in play; the archive (M20) opens games from the tabs.
+- "Paris Saint-G ermain" breaks mid-word on the side pick tile too, with M15a's pitch-label note for M24.
+
+- **Verified on Android (Claude, 2026-11-23):**
+  - Play again on a Galatasaray run opened a new side pick on the same screen (Porto–Benfica);
+  - Change filters opened `/play` step 2 with Solo kept;
+  - a practice run (Kane named, 27.0s) ended, and Practise again opened another practice run;
+  - a picked PSG–Arsenal final: Play it again reopened the same match, and Back to the archive opened the Archive tab;
+  - Android's back button on a summary opened step 3;
+  - the dev states `run-over`, `run-over-capped`, `run-over-picked` and `practice-summary` at 390 × 844 and 375 × 667, with no label wrapping.
+- **Verified on iOS by the user (2026-11-23):** Play again into a second run, Change filters on step 2 with the choices kept, Practise again, and Play it again and Back to the archive on the picked PSG–Arsenal final.
 
 ## History
