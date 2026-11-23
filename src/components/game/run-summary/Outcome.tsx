@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import { AccessibilityInfo, View, type ViewInstance } from 'react-native';
+import React from 'react';
+import { View } from 'react-native';
 import Lives from '@/components/game/Lives';
-import { OUTCOME_BOX } from '@/components/game/run-summary/styles';
+import { OUTCOME_BOX } from '@/components/game/styles';
 import { Badge } from '@/components/ui/badge';
 import { Text } from '@/components/ui/text';
+import { useMountFocus } from '@/hooks/use-mount-focus';
 import { SQUAD_SIZE } from '@/lib/api/schemas/common';
 import { pluralOf } from '@/lib/plural';
 import { summaryTitle } from '@/lib/summary';
@@ -11,29 +12,18 @@ import { cn } from '@/lib/utils';
 import { TABULAR_NUMS, TYPE_NUMBER, TYPE_TITLE } from '@/styles/classes';
 import type { SoloSummary } from '@/types/solo';
 
-// Long enough for the summary to be on screen first
-const FOCUS_DELAY_MS = 100;
 const MAX_FONT_SCALE = 1.2;
 
 type Props = { summary: SoloSummary };
 
 const Outcome = ({ summary }: Props) => {
-  const titleRef = useRef<ViewInstance>(null);
+  // Mounts once the summary is ready; the title is read first
+  const titleRef = useMountFocus();
   const isPerfect = summary.endReason === 'perfect_clear';
   const lives = summary.livesRemaining;
   const livesLeft = pluralOf(lives, 'life left', 'lives left');
   // Text on the green fill is on-accent, as on every pastel
   const ink = isPerfect ? 'text-on-accent' : 'text-fg';
-
-  // Mounts once the summary is ready; the title is read first
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (titleRef.current) {
-        AccessibilityInfo.sendAccessibilityEvent(titleRef.current, 'focus');
-      }
-    }, FOCUS_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     // A perfect clear takes the block in green, edge to edge

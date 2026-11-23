@@ -12,10 +12,11 @@ import {
 } from 'react-native';
 import { useIsFocused } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { CircleAlert, Hammer, WifiOff } from 'lucide-react-native';
+import { CircleAlert, WifiOff } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LobbyPanel from '@/components/duel/LobbyPanel';
 import CanvasGate from '@/components/game/CanvasGate';
+import DuelResultPanel from '@/components/game/DuelResultPanel';
 import FoundCount from '@/components/game/FoundCount';
 import ActiveRail from '@/components/game/game-canvas/ActiveRail';
 import GateAction from '@/components/game/game-canvas/GateAction';
@@ -28,13 +29,11 @@ import SidePickCard from '@/components/game/SidePickCard';
 import SoundToggle from '@/components/game/SoundToggle';
 import SquadGrid from '@/components/pitch/SquadGrid';
 import QuitChip from '@/components/shell/QuitChip';
-import StateNotice from '@/components/shell/StateNotice';
 import { Alert } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import { IconTile } from '@/components/ui/icon-tile';
 import { useGameSounds } from '@/hooks/use-game-sounds';
 import { useKeyboardFrame } from '@/hooks/use-keyboard-frame';
-import { gateSize, laterPartLine, laterRailPart } from '@/lib/canvas-parts';
+import { gateSize } from '@/lib/canvas-parts';
 import { LOADING_FORMATION } from '@/lib/formation';
 import { bandLift } from '@/lib/keyboard-band';
 import { suggest, type SuggestionIndex } from '@/lib/suggestions';
@@ -42,13 +41,12 @@ import { missedOnPitch } from '@/lib/summary';
 import { cn } from '@/lib/utils';
 import { isShortScreen } from '@/lib/welcome';
 import type { CanvasGateView, CanvasView } from '@/types/canvas';
-import type { LaterPart } from '@/types/canvas-gate';
 import type { LobbyAction } from '@/types/duel-lobby';
 
 // The rail's own gap above the home indicator
 const RAIL_BOTTOM_GAP = 12;
 
-// The turf's share of the window once a run ends, as the design sketch
+// The turf's share of the window once a game ends, as the design sketch
 const SUMMARY_TURF_SHARE = 0.4;
 const SHORT_SUMMARY_TURF_SHARE = 0.3;
 
@@ -76,17 +74,6 @@ function noticeParts(gate: CanvasGateView | null): NoticeParts {
       <GateSeconds countdown={gate.countdown} />
     ) : undefined,
   };
-}
-
-function laterNotice(part: LaterPart): ReactNode {
-  return (
-    <StateNotice
-      tone="info"
-      icon={Hammer}
-      message={laterPartLine(part)}
-      isCompact
-    />
-  );
 }
 
 type Props = {
@@ -142,9 +129,9 @@ const GameCanvas = ({
   // The result's own actions take over from quit
   const hasQuit = summary === null && result === null;
   const found = result?.found ?? view.found;
-  const railPart = laterRailPart(view);
-  // Only the live rail rides the keys; a summary has no input
-  const isBand = keyboard.isShown && railPart === null && soloEnd === null;
+  const hasEnded = soloEnd !== null || result !== null;
+  // Only the live rail rides the keys; a result has no input
+  const isBand = keyboard.isShown && !hasEnded;
   const isCompact = isShort || isBand;
   // In the flow until measured, then over the turf with its room held
   const isFloating = isBand && bandHeight > 0;
@@ -239,10 +226,10 @@ const GameCanvas = ({
           </View>
           <View className="flex-1">
             <View
-              className={cn('bg-turf p-2', soloEnd === null && 'flex-1')}
+              className={cn('bg-turf p-2', !hasEnded && 'flex-1')}
               // A share of the window, known only at run time
               style={
-                soloEnd
+                hasEnded
                   ? {
                       height: Math.round(
                         windowHeight *
@@ -284,6 +271,19 @@ const GameCanvas = ({
                   onPlayDuel={onPlayDuel}
                 />
               </View>
+            ) : result && view.mode === 'duel' ? (
+              <View className="flex-1 border-t-2 border-line bg-surface">
+                <DuelResultPanel
+                  result={result}
+                  isConnectionLost={view.endReason === 'connectionLost'}
+                  bottomInset={insets.bottom + RAIL_BOTTOM_GAP}
+                  isPrivate={view.isPrivate}
+                  hostAccess={view.hostAccess}
+                  onPlayAgain={onPlayAgain}
+                  onChangeFilters={onChangeFilters}
+                  onBackToPlay={onBackToPlay}
+                />
+              </View>
             ) : (
               <>
                 {/* Holds the band's room, so a list opening never moves the turf */}
@@ -318,29 +318,16 @@ const GameCanvas = ({
                       style={{ height: bandHeight }}
                     />
                   ) : null}
-                  {railPart ? (
-                    <View className="gap-3">
-                      {laterNotice(railPart)}
-                      {onBackToPlay ? (
-                        <Button
-                          label="Back to play"
-                          variant="secondary"
-                          onPress={onBackToPlay}
-                        />
-                      ) : null}
-                    </View>
-                  ) : (
-                    <ActiveRail
-                      view={view}
-                      guess={guess}
-                      suggestions={suggestions}
-                      onGuessChange={onGuessChange}
-                      onGuessSubmit={onGuessSubmit}
-                      isBand={isBand}
-                      canFocus={view.gate === null}
-                      onListOpenChange={setIsListOpen}
-                    />
-                  )}
+                  <ActiveRail
+                    view={view}
+                    guess={guess}
+                    suggestions={suggestions}
+                    onGuessChange={onGuessChange}
+                    onGuessSubmit={onGuessSubmit}
+                    isBand={isBand}
+                    canFocus={view.gate === null}
+                    onListOpenChange={setIsListOpen}
+                  />
                 </View>
               </>
             )}
