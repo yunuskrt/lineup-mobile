@@ -41,3 +41,4 @@ Not Started
 - M13b Filters Step: sheet rows, club search, era pair, skeleton, dev page.
 - M13c Start & Rooms: summary, Start hand-off, Create room, join by code.
 - M14a Side Pick & Loop: copy list D, side pick, solo loop, quit dialog.
+- M14b Gates & Practice: gate actions, empty-pool widen, practice runs.
