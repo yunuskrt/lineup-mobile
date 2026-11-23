@@ -2,16 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import FiltersStep from '@/components/play/FiltersStep';
-import LaterStep from '@/components/play/LaterStep';
 import ModeStep from '@/components/play/ModeStep';
 import PlaySteps from '@/components/play/PlaySteps';
 import SoloAllowanceNote from '@/components/play/SoloAllowanceNote';
+import StartStep from '@/components/play/StartStep';
 import Screen from '@/components/shell/Screen';
 import { useFilterOptions } from '@/hooks/use-filter-options';
 import { useProAccess } from '@/hooks/use-pro';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useStepBack } from '@/hooks/use-step-back';
 import { filtersFromParams, filtersToParams } from '@/lib/filters';
+import { gameHref } from '@/lib/game-href';
 import {
   MODE_OPTION_NAMES,
   modeOptionFrom,
@@ -21,6 +22,13 @@ import {
   withModeOption,
   withStep,
 } from '@/lib/play-steps';
+import {
+  hasOpenRun,
+  modeOf,
+  PRACTICE_OVER_RUN_COPY,
+  withPractice,
+} from '@/lib/practice';
+import { joinCodeFrom } from '@/lib/room-code';
 import {
   paramsKey,
   routeParamsFor,
@@ -45,6 +53,12 @@ const PlayScreen = ({}: Props) => {
   // A locked practice pick shows as Solo
   const option: ModeOption | null =
     picked === 'practice' && practiceAccess !== 'open' ? 'solo' : picked;
+  const mode = option ? modeOf(option).mode : null;
+  const isPractice = option === 'practice';
+  // The last code the params brought; the filters rewrite drops it
+  const paramsCode = joinCodeFrom(params);
+  const [initialCode, setInitialCode] = useState(paramsCode);
+  if (paramsCode && paramsCode !== initialCode) setInitialCode(paramsCode);
   // The server's count; nothing while unlimited, nothing for practice
   const allowance = useSoloAllowance();
   const soloAllowance = option === 'solo' ? (allowance.data ?? null) : null;
@@ -114,11 +128,13 @@ const PlayScreen = ({}: Props) => {
       onPlayDuel={() => changeOption('duel')}
     />
   ) : null;
+  const startParams = filterParams && withPractice(filterParams, isPractice);
 
   return (
     <Screen
       title="Play"
       hasTabBar
+      avoidsKeyboard
       canGoBack={goBack !== null}
       onBack={goBack ?? undefined}
       scrollResetKey={step}
@@ -140,6 +156,8 @@ const PlayScreen = ({}: Props) => {
           onChange={changeOption}
           practiceAccess={practiceAccess}
           allowance={allowanceNote}
+          filterParams={filterParams}
+          initialCode={initialCode}
           onNext={() => goTo('filters')}
           isHeadingFocused={hasMoved}
         />
@@ -156,11 +174,21 @@ const PlayScreen = ({}: Props) => {
           isHeadingFocused={hasMoved}
         />
       ) : null}
-      {step === 'start' ? (
-        <LaterStep
-          title="Ready to play"
-          builtIn="M13c: the start"
-          onBack={() => goTo('filters')}
+      {step === 'start' && option && mode ? (
+        <StartStep
+          option={option}
+          mode={mode}
+          filters={filters}
+          options={options.data ?? null}
+          filterParams={filterParams}
+          href={startParams ? gameHref(mode, startParams) : null}
+          isCapped={isCapped}
+          label={isPractice ? 'Start practice' : undefined}
+          warningFor={() =>
+            isPractice && hasOpenRun() ? PRACTICE_OVER_RUN_COPY : null
+          }
+          allowance={allowanceNote}
+          onGo={goTo}
           isHeadingFocused={hasMoved}
         />
       ) : null}
