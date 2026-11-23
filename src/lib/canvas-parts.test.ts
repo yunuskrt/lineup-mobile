@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  gateSize,
-  laterGatePart,
-  laterPartLine,
-  laterRailPart,
-} from '@/lib/canvas-parts';
+import { gateSize, laterPartLine, laterRailPart } from '@/lib/canvas-parts';
 import { CANVAS_STATES } from '@/lib/dev/canvas-states';
 import type { CanvasMode, CanvasView } from '@/types/canvas';
 
@@ -26,20 +21,6 @@ describe('gateSize', () => {
   it('sizes the lobby by its step', () => {
     expect(gateSize(viewOf('duel', 'searching'))).toBe('narrow');
     expect(gateSize(viewOf('duel', 'filters'))).toBe('wide');
-  });
-});
-
-describe('laterGatePart', () => {
-  it('names the room steps, still ahead', () => {
-    expect(laterGatePart(viewOf('duel', 'room-waiting'))?.phase).toBe('M17b');
-    expect(laterGatePart(viewOf('duel', 'room-expired'))?.phase).toBe('M17b');
-  });
-
-  it('names nothing for a gate the board draws itself', () => {
-    expect(laterGatePart(viewOf('solo', 'side-pick'))).toBeNull();
-    expect(laterGatePart(viewOf('solo', 'pre-match'))).toBeNull();
-    expect(laterGatePart(viewOf('duel', 'you-reconnecting'))).toBeNull();
-    expect(laterGatePart(viewOf('duel', 'paired'))).toBeNull();
   });
 });
 

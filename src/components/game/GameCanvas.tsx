@@ -34,12 +34,7 @@ import { Button } from '@/components/ui/button';
 import { IconTile } from '@/components/ui/icon-tile';
 import { useGameSounds } from '@/hooks/use-game-sounds';
 import { useKeyboardFrame } from '@/hooks/use-keyboard-frame';
-import {
-  gateSize,
-  laterGatePart,
-  laterPartLine,
-  laterRailPart,
-} from '@/lib/canvas-parts';
+import { gateSize, laterPartLine, laterRailPart } from '@/lib/canvas-parts';
 import { LOADING_FORMATION } from '@/lib/formation';
 import { bandLift } from '@/lib/keyboard-band';
 import { suggest, type SuggestionIndex } from '@/lib/suggestions';
@@ -153,7 +148,6 @@ const GameCanvas = ({
   const isCompact = isShort || isBand;
   // In the flow until measured, then over the turf with its room held
   const isFloating = isBand && bandHeight > 0;
-  const gatePart = laterGatePart(view);
   const notice = noticeParts(view.gate);
   const query = useDeferredValue(guess);
   // Keyed by value: views are rebuilt every render
@@ -201,9 +195,7 @@ const GameCanvas = ({
         detail={notice.detail}
         size={gateSize(view)}
         body={
-          gatePart ? (
-            laterNotice(gatePart)
-          ) : view.mode === 'duel' && view.lobby ? (
+          view.mode === 'duel' && view.lobby ? (
             <LobbyPanel
               lobby={view.lobby}
               you={view.you}
