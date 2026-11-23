@@ -209,6 +209,15 @@ Not copies of whole files: types the web keeps inside `.tsx` components, moved h
 | --- | --- | --- |
 | `src/hooks/use-solo-run.ts` | M14a | word for word |
 
+## Copy list E — Socket client (M16), 4 files
+
+| File | Phase | State |
+| --- | --- | --- |
+| `src/lib/api/socket/duel-client.ts` | M16 | word for word |
+| `src/lib/api/socket/duel-client.test.ts` | M16 | word for word |
+| `src/lib/api/socket/messages.ts` | M16 | word for word |
+| `src/lib/api/socket/messages.test.ts` | M16 | word for word |
+
 ## Single files (later phases)
 
 Pasted by hand outside a copy list, when a phase needed them.
