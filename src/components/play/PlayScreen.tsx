@@ -1,13 +1,17 @@
 import React, { useEffect, useEffectEvent, useState } from 'react';
 import { View } from 'react-native';
 import { router, useIsFocused, useLocalSearchParams } from 'expo-router';
+import FiltersActions from '@/components/play/FiltersActions';
 import FiltersStep from '@/components/play/FiltersStep';
 import ModeStep from '@/components/play/ModeStep';
 import PlaySteps from '@/components/play/PlaySteps';
 import SoloAllowanceNote from '@/components/play/SoloAllowanceNote';
+import StartActions from '@/components/play/StartActions';
 import StartStep from '@/components/play/StartStep';
 import Screen from '@/components/shell/Screen';
+import { Button } from '@/components/ui/button';
 import { useFilterOptions } from '@/hooks/use-filter-options';
+import { useKeyboardFrame } from '@/hooks/use-keyboard-frame';
 import { useProAccess } from '@/hooks/use-pro';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useStepBack } from '@/hooks/use-step-back';
@@ -123,6 +127,18 @@ const PlayScreen = ({}: Props) => {
     write(queryFor(step, next));
   }
 
+  // A card tap moves on, as Next would; Back returns with it kept
+  function pickOption(next: ModeOption) {
+    // A capped Solo stays, to show the cap line and Play a duel
+    if (next === 'solo' && isSoloCapped(allowance.data ?? null)) {
+      changeOption(next);
+      return;
+    }
+    setHasSeenFilters(true);
+    setHasMoved(true);
+    write(queryFor('filters', next));
+  }
+
   function changeFilters(next: Filters) {
     if (!options.data) return;
     write(queryFor(step, picked, filtersToParams(next, options.data)));
@@ -140,6 +156,36 @@ const PlayScreen = ({}: Props) => {
     />
   ) : null;
   const startParams = filterParams && withPractice(filterParams, isPractice);
+  // Typing a code, Join is the way on; Next would cover it on an SE
+  const isTypingCode = useKeyboardFrame().isShown && step === 'mode';
+  // Each step's way on, pinned above the tab bar
+  const footer = isTypingCode ? undefined : step === 'mode' ? (
+    <Button
+      label="Next: filters"
+      size="large"
+      isDisabled={!option}
+      onPress={() => goTo('filters')}
+    />
+  ) : step === 'filters' ? (
+    <FiltersActions
+      canGoNext={filters !== null}
+      onBack={() => goTo('mode')}
+      onNext={() => goTo('start')}
+    />
+  ) : option && mode ? (
+    <StartActions
+      mode={mode}
+      filterParams={filterParams}
+      href={startParams ? gameHref(mode, startParams) : null}
+      isCapped={isCapped}
+      label={isPractice ? 'Start practice' : undefined}
+      warningFor={() =>
+        isPractice && hasOpenRun() ? PRACTICE_OVER_RUN_COPY : null
+      }
+      allowance={allowanceNote}
+      onBack={() => goTo('filters')}
+    />
+  ) : undefined;
 
   return (
     <Screen
@@ -148,6 +194,7 @@ const PlayScreen = ({}: Props) => {
       canGoBack={goBack !== null}
       onBack={goBack ?? undefined}
       scrollResetKey={step}
+      footer={footer}
     >
       <View>
         <PlaySteps
@@ -164,11 +211,12 @@ const PlayScreen = ({}: Props) => {
         <ModeStep
           option={option}
           onChange={changeOption}
+          onPick={pickOption}
           practiceAccess={practiceAccess}
           allowance={allowanceNote}
-          filterParams={filterParams}
+          // Joining is a duel, never practice, whatever card is picked
+          joinParams={filterParams && withModeOption(filterParams, 'duel')}
           initialCode={initialCode}
-          onNext={() => goTo('filters')}
           isHeadingFocused={hasMoved}
         />
       ) : null}
@@ -179,8 +227,6 @@ const PlayScreen = ({}: Props) => {
           onChange={changeFilters}
           error={options.error}
           onRetry={() => void options.refetch()}
-          onBack={() => goTo('mode')}
-          onNext={() => goTo('start')}
           isHeadingFocused={hasMoved}
         />
       ) : null}
@@ -190,14 +236,7 @@ const PlayScreen = ({}: Props) => {
           mode={mode}
           filters={filters}
           options={options.data ?? null}
-          filterParams={filterParams}
-          href={startParams ? gameHref(mode, startParams) : null}
           isCapped={isCapped}
-          label={isPractice ? 'Start practice' : undefined}
-          warningFor={() =>
-            isPractice && hasOpenRun() ? PRACTICE_OVER_RUN_COPY : null
-          }
-          allowance={allowanceNote}
           onGo={goTo}
           isHeadingFocused={hasMoved}
         />

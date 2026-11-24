@@ -21,6 +21,8 @@ type Props = {
   onChange: (option: ModeOption) => void;
   // Practice is Pro (R14); shown locked, never hidden
   practiceAccess: ProAccess;
+  // A tap that moves on to the filters; without it a tap only selects
+  onPick?: (option: ModeOption) => void;
 };
 
 const MODES: ModeCard[] = [
@@ -47,7 +49,7 @@ const MODES: ModeCard[] = [
   },
 ];
 
-const ModeChoice = ({ option, onChange, practiceAccess }: Props) => {
+const ModeChoice = ({ option, onChange, practiceAccess, onPick }: Props) => {
   // An iPhone SE drops the descriptions, as design-mobile.md § 6
   const hasText = !isShortScreen(useWindowDimensions().height);
 
@@ -72,7 +74,8 @@ const ModeChoice = ({ option, onChange, practiceAccess }: Props) => {
           <ChoiceTile
             key={card.option}
             isSelected={isSelected}
-            onPress={() => onChange(card.option)}
+            // The selected card moves on too, as a reader's double-tap
+            onPress={() => (onPick ?? onChange)(card.option)}
             accessibilityRole="radio"
             accessibilityLabel={`${card.title}. ${card.text}`}
           >
