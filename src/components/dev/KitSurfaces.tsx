@@ -2,6 +2,7 @@ import React, { type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 import { CircleAlert, Inbox, Info, Trophy } from 'lucide-react-native';
 import { DevSection } from '@/components/dev/DevSection';
+import OfflineNotice from '@/components/shell/OfflineNotice';
 import RetryNotice from '@/components/shell/RetryNotice';
 import StateNotice from '@/components/shell/StateNotice';
 import { Alert } from '@/components/ui/alert';
@@ -237,6 +238,10 @@ export const SurfaceSections = ({ only }: SurfaceSectionsProps) => {
 
       <DevSection id="select" title="Select" only={only}>
         <SelectDemo />
+      </DevSection>
+
+      <DevSection id="offline" title="Offline notice" only={only}>
+        <OfflineNotice isForced />
       </DevSection>
     </>
   );

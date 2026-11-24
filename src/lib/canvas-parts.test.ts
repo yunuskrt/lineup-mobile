@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gateSize, laterPartLine } from '@/lib/canvas-parts';
+import { gateSize } from '@/lib/canvas-parts';
 import { CANVAS_STATES } from '@/lib/dev/canvas-states';
 import type { CanvasMode, CanvasView } from '@/types/canvas';
 
@@ -21,13 +21,5 @@ describe('gateSize', () => {
   it('sizes the lobby by its step', () => {
     expect(gateSize(viewOf('duel', 'searching'))).toBe('narrow');
     expect(gateSize(viewOf('duel', 'filters'))).toBe('wide');
-  });
-});
-
-describe('laterPartLine', () => {
-  it('says which phase builds it', () => {
-    expect(laterPartLine({ phase: 'M21', name: 'update screen' })).toBe(
-      'Built in M21: the update screen.',
-    );
   });
 });

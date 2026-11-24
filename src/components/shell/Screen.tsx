@@ -8,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BackButton from '@/components/shell/screen/BackButton';
+import OfflineNotice from '@/components/shell/OfflineNotice';
 import { Text } from '@/components/ui/text';
 import { headerCollapse } from '@/lib/screen-header';
 import { TYPE_CARD_TITLE, TYPE_TITLE } from '@/styles/classes';
@@ -107,6 +108,7 @@ const Screen = ({
           style={barStyle}
         />
       </View>
+      <OfflineNotice />
       <KeyboardAvoidingView
         behavior={avoidsKeyboard ? 'padding' : undefined}
         enabled={avoidsKeyboard}
