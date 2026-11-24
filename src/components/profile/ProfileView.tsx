@@ -2,6 +2,7 @@ import React, { type ReactNode } from 'react';
 import { View } from 'react-native';
 import DuelRecord from '@/components/profile/DuelRecord';
 import GuestUpgrade from '@/components/profile/GuestUpgrade';
+import HistoryList from '@/components/profile/HistoryList';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileNotice from '@/components/profile/ProfileNotice';
 import ProfileSkeleton from '@/components/profile/ProfileSkeleton';
@@ -14,12 +15,17 @@ import type { ProfileScreenView } from '@/types/profile-screen';
 type Props = {
   view: ProfileScreenView;
   onRetry: () => void;
+  onShowMore: () => void;
   // Previews have no server to refresh from
   onRefresh?: () => void;
   isRefreshing?: boolean;
 };
 
-function contentOf(view: ProfileScreenView, onRetry: () => void): ReactNode {
+function contentOf(
+  view: ProfileScreenView,
+  onRetry: () => void,
+  onShowMore: () => void,
+): ReactNode {
   switch (view.status) {
     case 'loading':
       return <ProfileSkeleton isGuest={view.isGuest} />;
@@ -41,6 +47,11 @@ function contentOf(view: ProfileScreenView, onRetry: () => void): ReactNode {
             <DuelRecord stats={stats} />
             <ProfileStats stats={stats} />
           </View>
+          <HistoryList
+            history={view.history}
+            more={view.more}
+            onShowMore={onShowMore}
+          />
           {/* A guest can't sign back in; the strip upgrades instead */}
           {user.isGuest ? null : (
             <View className={PROFILE_SECTION}>
@@ -53,7 +64,13 @@ function contentOf(view: ProfileScreenView, onRetry: () => void): ReactNode {
   }
 }
 
-const ProfileView = ({ view, onRetry, onRefresh, isRefreshing }: Props) => {
+const ProfileView = ({
+  view,
+  onRetry,
+  onShowMore,
+  onRefresh,
+  isRefreshing,
+}: Props) => {
   const canRefresh = view.status === 'ready' || view.status === 'error';
   return (
     <Screen
@@ -62,7 +79,7 @@ const ProfileView = ({ view, onRetry, onRefresh, isRefreshing }: Props) => {
       onRefresh={canRefresh ? onRefresh : undefined}
       isRefreshing={isRefreshing}
     >
-      {contentOf(view, onRetry)}
+      {contentOf(view, onRetry, onShowMore)}
     </Screen>
   );
 };

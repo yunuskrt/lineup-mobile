@@ -50,3 +50,4 @@ Not Started
 - M18a Duel Result: outcome tones, tally, shared result frame, room states.
 - M18b Drops & Resume: reducer test, drop dev states, keyboard on return.
 - M19a Profile Screen: record, stat grid, guest strip, sign out, refresh.
+- M19b History: rows, mode tags, Show more states, refresh from page one.

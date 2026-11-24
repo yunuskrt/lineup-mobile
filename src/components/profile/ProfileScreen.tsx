@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import ProfileView from '@/components/profile/ProfileView';
 import { useSession } from '@/hooks/use-auth';
-import { useHistory, useProfile } from '@/hooks/use-profile';
-import { profileScreenView } from '@/lib/profile';
+import { useHistory, useProfile, useRefreshHistory } from '@/hooks/use-profile';
+import { isStaleCursor, profileScreenView } from '@/lib/profile';
 
 type Props = {};
 
@@ -10,6 +10,7 @@ const ProfileScreen = ({}: Props) => {
   const session = useSession();
   const profile = useProfile();
   const history = useHistory();
+  const refreshHistory = useRefreshHistory();
   // Only a pull shows the spinner, never a refetch on focus
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -25,11 +26,21 @@ const ProfileScreen = ({}: Props) => {
     if (history.isError && !history.data) void history.refetch();
   }
 
+  function showMore() {
+    if (history.isFetchingNextPage) return;
+    // Refetch recomputes each cursor from page one
+    if (history.isFetchNextPageError && isStaleCursor(history.error)) {
+      void history.refetch();
+      return;
+    }
+    void history.fetchNextPage();
+  }
+
   async function refresh() {
     setIsRefreshing(true);
     // Refetch ignores enabled: with no user, only the session reloads
     if (session.data) {
-      await Promise.all([profile.refetch(), history.refetch()]);
+      await Promise.all([profile.refetch(), refreshHistory()]);
     } else {
       await session.refetch();
     }
@@ -40,6 +51,7 @@ const ProfileScreen = ({}: Props) => {
     <ProfileView
       view={view}
       onRetry={retry}
+      onShowMore={showMore}
       onRefresh={() => void refresh()}
       isRefreshing={isRefreshing}
     />

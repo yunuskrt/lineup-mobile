@@ -1,7 +1,11 @@
 import React from 'react';
 import { View } from 'react-native';
 import {
+  HISTORY_LINE,
+  HISTORY_LIST,
+  HISTORY_ROW,
   PROFILE_FIGURES,
+  PROFILE_SECTION,
   RECORD_BAR,
   RECORD_BLOCK,
   RECORD_HEADER,
@@ -14,6 +18,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 const COUNTS = ['won', 'drawn', 'lost'];
+
+const HISTORY_ROWS = [0, 1, 2];
 
 type Props = { isGuest: boolean };
 
@@ -71,6 +77,29 @@ const ProfileSkeleton = ({ isGuest }: Props) => {
                   <Skeleton className="h-7 w-12" />
                 </View>
               ))}
+            </View>
+          ))}
+        </View>
+      </View>
+      <View className={PROFILE_SECTION}>
+        <Skeleton className="h-7.5 w-28" />
+        <View className={HISTORY_LIST}>
+          {HISTORY_ROWS.map((row) => (
+            <View
+              key={row}
+              className={cn(
+                HISTORY_ROW,
+                row < HISTORY_ROWS.length - 1 && 'border-b-2 border-rule',
+              )}
+            >
+              <View className={HISTORY_LINE}>
+                <Skeleton className="h-6 max-w-56 flex-1" />
+                <Skeleton className="h-4 w-14" />
+              </View>
+              <View className={HISTORY_LINE}>
+                <Skeleton className="h-5 max-w-72 flex-1" />
+                <Skeleton className="h-5 w-12" />
+              </View>
             </View>
           ))}
         </View>
