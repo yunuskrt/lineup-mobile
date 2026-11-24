@@ -33,6 +33,7 @@ type Props = {
   isPressedPreview?: boolean;
   accessibilityRole?: AccessibilityRole;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
   accessibilityState?: AccessibilityState;
   hitSlop?: number;
 };
@@ -49,6 +50,7 @@ export const PressableFace = ({
   isPressedPreview = false,
   accessibilityRole = 'button',
   accessibilityLabel,
+  accessibilityHint,
   accessibilityState,
   hitSlop,
 }: Props) => {
@@ -83,6 +85,7 @@ export const PressableFace = ({
       hitSlop={hitSlop}
       accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
       accessibilityState={{
         ...accessibilityState,
         disabled: isInert,

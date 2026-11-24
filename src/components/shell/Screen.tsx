@@ -14,9 +14,12 @@ import { TYPE_CARD_TITLE, TYPE_TITLE } from '@/styles/classes';
 import { ROLES } from '@/styles/tokens';
 
 const BOTTOM_GAP = 32;
+const FOOTER_GAP = 12;
 
 type Props = {
   title: string;
+  // A sticker over the large title, such as PRO
+  aboveTitle?: ReactNode;
   children: ReactNode;
   // Pushed screens get a back chevron
   canGoBack?: boolean;
@@ -33,11 +36,14 @@ type Props = {
   // Pull to refresh, with the spinner in ink
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  // A row pinned under the scroll, clear of the home indicator
+  footer?: ReactNode;
 };
 
 // A ruled column under a large title that collapses into a bar
 const Screen = ({
   title,
+  aboveTitle,
   children,
   canGoBack = false,
   onBack,
@@ -47,6 +53,7 @@ const Screen = ({
   scrollResetKey,
   onRefresh,
   isRefreshing = false,
+  footer,
 }: Props) => {
   const insets = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
@@ -63,7 +70,9 @@ const Screen = ({
   const barStyle = useAnimatedStyle(() => ({
     opacity: headerCollapse(scrollY.value, titleHeight.value),
   }));
-  const bottom = (hasTabBar ? 0 : insets.bottom) + BOTTOM_GAP;
+  const inset = hasTabBar ? 0 : insets.bottom;
+  // A footer takes the inset; the scroll keeps its own gap
+  const bottom = (footer ? 0 : inset) + BOTTOM_GAP;
 
   return (
     <View className="flex-1 bg-surface">
@@ -127,7 +136,9 @@ const Screen = ({
               onLayout={(event) =>
                 titleHeight.set(event.nativeEvent.layout.height)
               }
+              className="gap-3"
             >
+              {aboveTitle}
               <Text accessibilityRole="header" className={TYPE_TITLE}>
                 {title}
               </Text>
@@ -135,6 +146,15 @@ const Screen = ({
             {children}
           </View>
         </Animated.ScrollView>
+        {footer ? (
+          <View
+            className="border-t-2 border-line bg-surface px-4 pt-3"
+            // The home indicator's inset is known only at run time
+            style={{ paddingBottom: inset + FOOTER_GAP }}
+          >
+            {footer}
+          </View>
+        ) : null}
       </KeyboardAvoidingView>
     </View>
   );
