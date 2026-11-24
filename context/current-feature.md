@@ -49,3 +49,4 @@ Not Started
 - M17b Rooms: room code, copy, share, expiry, joins, iOS code-field fix.
 - M18a Duel Result: outcome tones, tally, shared result frame, room states.
 - M18b Drops & Resume: reducer test, drop dev states, keyboard on return.
+- M19a Profile Screen: record, stat grid, guest strip, sign out, refresh.
