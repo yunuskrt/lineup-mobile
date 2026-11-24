@@ -47,7 +47,7 @@ This todo file is for developer-side use.
 - [x] **Phase M19 — Profile**: Record, stat tiles, paged history, pull to refresh, guest strip with upgrade, sign out, `?state=`.
 - [x] **Phase M20 — Archive & Pro**: Archive search, filter sheet, fixture rows with Play and Practise, Pro locks, `/pro` table, `?state=`.
 - [x] **Phase M21 — System States**: Update-required screen with store link, empty pool widen, rate limit, connection lost, offline notice.
-- [ ] **Phase M22 — Room Links**: `lineup://play/duel?room=<code>` opens the join with the code filled, cold start and warm.
+- [x] **Phase M22 — Room Links**: `lineup://play/duel?room=<code>` opens the join with the code filled, cold start and warm.
 
 ## Part 4 — Quality & Release
 

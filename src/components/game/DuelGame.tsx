@@ -5,6 +5,7 @@ import QuitDialog, { DUEL_FORFEIT_COPY } from '@/components/game/QuitDialog';
 import UpdateRequired from '@/components/game/UpdateRequired';
 import { useDuel } from '@/hooks/use-duel';
 import { useGameBack } from '@/hooks/use-game-back';
+import { useGameOpen } from '@/hooks/use-game-open';
 import { usePlayerDirectory } from '@/hooks/use-player-directory';
 import { useProAccess } from '@/hooks/use-pro';
 import {
@@ -153,6 +154,7 @@ const DuelGame = ({}: Props) => {
     follow(playAgain());
   }
 
+  useGameOpen();
   useGameBack(handleQuit);
 
   if (state.phase === 'refused') {

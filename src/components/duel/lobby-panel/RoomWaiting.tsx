@@ -8,6 +8,7 @@ import SummaryList from '@/components/duel/lobby-panel/SummaryList';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { roomShareMessage } from '@/lib/room-share';
+import { WEB_URL } from '@/lib/web-url';
 import { SECTION_LABEL } from '@/styles/classes';
 import type { DuelLobbyView, LobbyAction } from '@/types/duel-lobby';
 
@@ -23,7 +24,7 @@ const RoomWaiting = ({ lobby, onAction }: Props) => {
 
   async function share() {
     try {
-      await Share.share({ message: roomShareMessage(code) });
+      await Share.share({ message: roomShareMessage(code, WEB_URL) });
     } catch {
       // A closed or failed sheet changes nothing: the code stays shown
     }

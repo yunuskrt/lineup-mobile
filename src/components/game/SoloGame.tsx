@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import GameCanvas from '@/components/game/GameCanvas';
 import QuitDialog from '@/components/game/QuitDialog';
 import { useGameBack } from '@/hooks/use-game-back';
+import { useGameOpen } from '@/hooks/use-game-open';
 import { usePlayerDirectory } from '@/hooks/use-player-directory';
 import { useSoloAllowance } from '@/hooks/use-solo-allowance';
 import { useSoloRun } from '@/hooks/use-solo-run';
@@ -124,6 +125,7 @@ const SoloGame = ({}: Props) => {
     else leave();
   }
 
+  useGameOpen();
   useGameBack(handleQuit);
 
   return (
