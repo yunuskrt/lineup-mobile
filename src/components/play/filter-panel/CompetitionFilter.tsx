@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import CompetitionLogo from '@/components/game/CompetitionLogo';
 import CompetitionGroup from '@/components/play/filter-panel/CompetitionGroup';
-import FilterRow from '@/components/play/filter-panel/FilterRow';
+import FilterTrigger from '@/components/play/filter-panel/FilterTrigger';
 import OptionRow from '@/components/play/filter-panel/OptionRow';
-import SheetTrigger from '@/components/play/filter-panel/SheetTrigger';
 import type { FilterPanelProps } from '@/components/play/FilterPanel';
 import { Sheet } from '@/components/ui/sheet';
 import {
@@ -14,10 +13,15 @@ import {
 } from '@/lib/filters';
 import { SELECT_SEARCH_FROM } from '@/lib/select';
 
-type Props = FilterPanelProps;
+type Props = FilterPanelProps & { isChip?: boolean };
 
 // A single pick: it fits the era and drops clubs outside it
-const CompetitionFilter = ({ options, filters, onChange }: Props) => {
+const CompetitionFilter = ({
+  options,
+  filters,
+  onChange,
+  isChip = false,
+}: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const picked = pickedCompetition(filters, options);
   const groups = competitionGroups(options.competitions);
@@ -29,12 +33,13 @@ const CompetitionFilter = ({ options, filters, onChange }: Props) => {
   }
 
   return (
-    <FilterRow label="Competition">
-      <SheetTrigger
-        name="Competition"
-        value={picked?.name ?? 'Any'}
-        onPress={() => setIsOpen(true)}
-      />
+    <FilterTrigger
+      name="Competition"
+      value={picked?.name ?? 'Any'}
+      isActive={picked !== null}
+      isChip={isChip}
+      onPress={() => setIsOpen(true)}
+    >
       <Sheet
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -66,7 +71,7 @@ const CompetitionFilter = ({ options, filters, onChange }: Props) => {
           ))}
         </ScrollView>
       </Sheet>
-    </FilterRow>
+    </FilterTrigger>
   );
 };
 

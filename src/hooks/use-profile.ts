@@ -1,18 +1,15 @@
 import {
-  type InfiniteData,
+  type QueryClient,
   useInfiniteQuery,
   useQuery,
-  type QueryClient,
   useQueryClient,
 } from '@tanstack/react-query';
 import { useSession } from '@/hooks/use-auth';
 import { getApiClient } from '@/lib/api';
 import { DEFAULT_HISTORY_LIMIT } from '@/lib/api/schemas/profile';
 import { unwrap } from '@/lib/api/unwrap';
+import { refetchFirstPage } from '@/lib/first-page';
 import { HISTORY_QUERY_KEY, PROFILE_QUERY_KEY } from '@/lib/query-keys';
-import type { HistoryPage } from '@/types/profile';
-
-type HistoryData = InfiniteData<HistoryPage, string | null>;
 
 // Keyed by user, so a new identity never sees old numbers
 function useUserId(): string | null {
@@ -45,25 +42,12 @@ export function useHistory() {
   });
 }
 
-// Keeps page one only, so a refetch fetches just that
-export function firstHistoryPage(data: HistoryData): HistoryData {
-  return {
-    pages: data.pages.slice(0, 1),
-    pageParams: data.pageParams.slice(0, 1),
-  };
-}
-
 // A pull starts the list over from the newest page
-export async function refreshHistory(
+export function refreshHistory(
   queryClient: QueryClient,
   userId: string | null,
 ): Promise<void> {
-  const queryKey = [...HISTORY_QUERY_KEY, userId];
-  queryClient.setQueryData<HistoryData>(
-    queryKey,
-    (data) => data && firstHistoryPage(data),
-  );
-  await queryClient.refetchQueries({ queryKey, exact: true });
+  return refetchFirstPage(queryClient, [...HISTORY_QUERY_KEY, userId]);
 }
 
 export function useRefreshHistory() {
