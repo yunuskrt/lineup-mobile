@@ -16,10 +16,8 @@ type Props = { plan: ProPlan };
 const ProView = ({ plan }: Props) => {
   return (
     <Screen
-      title="Lineup Pro"
       canGoBack
       onBack={leavePro}
-      aboveTitle={<Badge label="Pro" variant="sticker" tone="brand" />}
       footer={
         // Same height in every plan, so nothing shifts
         <View className="min-h-21 justify-center">
@@ -36,7 +34,11 @@ const ProView = ({ plan }: Props) => {
         </View>
       }
     >
-      <Text className="text-16 leading-6 text-fg-muted">{LINE}</Text>
+      {/* The sticker names the page; there is no title */}
+      <View className="items-start gap-3">
+        <Badge label="Pro" variant="sticker" tone="brand" />
+        <Text className="text-16 leading-6 text-fg-muted">{LINE}</Text>
+      </View>
       <View className="border-t-2 border-line pt-6">
         <ProPlanTable />
       </View>

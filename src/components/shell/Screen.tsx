@@ -11,16 +11,18 @@ import BackButton from '@/components/shell/screen/BackButton';
 import OfflineNotice from '@/components/shell/OfflineNotice';
 import { Text } from '@/components/ui/text';
 import { headerCollapse } from '@/lib/screen-header';
+import { cn } from '@/lib/utils';
 import { TYPE_CARD_TITLE, TYPE_TITLE } from '@/styles/classes';
 import { ROLES } from '@/styles/tokens';
 
 const BOTTOM_GAP = 32;
+// Without a title, the rule fades in over the gap above the column
+const TOP_GAP = 16;
 const FOOTER_GAP = 12;
 
 type Props = {
-  title: string;
-  // A sticker over the large title, such as PRO
-  aboveTitle?: ReactNode;
+  // Only the auth screens keep a large title
+  title?: string;
   children: ReactNode;
   // Pushed screens get a back chevron
   canGoBack?: boolean;
@@ -41,10 +43,9 @@ type Props = {
   footer?: ReactNode;
 };
 
-// A ruled column under a large title that collapses into a bar
+// A ruled column; a large title, where there is one, becomes a bar
 const Screen = ({
   title,
-  aboveTitle,
   children,
   canGoBack = false,
   onBack,
@@ -58,7 +59,7 @@ const Screen = ({
 }: Props) => {
   const insets = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
-  const titleHeight = useSharedValue(0);
+  const titleHeight = useSharedValue(title ? 0 : TOP_GAP);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
 
   useEffect(() => {
@@ -74,6 +75,7 @@ const Screen = ({
   const inset = hasTabBar ? 0 : insets.bottom;
   // A footer takes the inset; the scroll keeps its own gap
   const bottom = (footer ? 0 : inset) + BOTTOM_GAP;
+  const hasRow = canGoBack || headerAction !== undefined || title !== undefined;
 
   return (
     <View className="flex-1 bg-surface">
@@ -82,26 +84,32 @@ const Screen = ({
         // The top inset is known only at run time
         style={{ paddingTop: insets.top }}
       >
-        <View className="h-11 flex-row items-center gap-2 px-2">
-          {canGoBack ? (
-            <BackButton onPress={onBack} />
-          ) : (
-            <View className="w-2" />
-          )}
-          <Animated.View
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            pointerEvents="none"
-            className="flex-1"
-            // A Reanimated style: the compact title fades in
-            style={barStyle}
-          >
-            <Text numberOfLines={1} className={TYPE_CARD_TITLE}>
-              {title}
-            </Text>
-          </Animated.View>
-          {headerAction}
-        </View>
+        {hasRow ? (
+          <View className="h-11 flex-row items-center gap-2 px-2">
+            {canGoBack ? (
+              <BackButton onPress={onBack} />
+            ) : (
+              <View className="w-2" />
+            )}
+            {title ? (
+              <Animated.View
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+                pointerEvents="none"
+                className="flex-1"
+                // A Reanimated style: the compact title fades in
+                style={barStyle}
+              >
+                <Text numberOfLines={1} className={TYPE_CARD_TITLE}>
+                  {title}
+                </Text>
+              </Animated.View>
+            ) : (
+              <View className="flex-1" />
+            )}
+            {headerAction}
+          </View>
+        ) : null}
         <Animated.View
           className="h-0.5 bg-line"
           // A Reanimated style: the rule fades in with the bar
@@ -133,18 +141,18 @@ const Screen = ({
           // The bottom inset is known only at run time
           contentContainerStyle={{ paddingBottom: bottom }}
         >
-          <View className="gap-6 px-4 pt-2">
-            <View
-              onLayout={(event) =>
-                titleHeight.set(event.nativeEvent.layout.height)
-              }
-              className="gap-3"
-            >
-              {aboveTitle}
-              <Text accessibilityRole="header" className={TYPE_TITLE}>
-                {title}
-              </Text>
-            </View>
+          <View className={cn('gap-6 px-4', title ? 'pt-2' : 'pt-4')}>
+            {title ? (
+              <View
+                onLayout={(event) =>
+                  titleHeight.set(event.nativeEvent.layout.height)
+                }
+              >
+                <Text accessibilityRole="header" className={TYPE_TITLE}>
+                  {title}
+                </Text>
+              </View>
+            ) : null}
             {children}
           </View>
         </Animated.ScrollView>

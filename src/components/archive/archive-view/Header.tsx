@@ -15,7 +15,7 @@ const LINE = 'text-16 text-fg-muted';
 
 type Props = { view: ArchiveView };
 
-// Under the screen's title: the Pro sticker, then the total line
+// The screen's top: the Pro sticker, then the total line
 const Header = ({ view }: Props) => {
   const config = useAppConfig();
   return (

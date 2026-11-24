@@ -8,14 +8,12 @@ import { Text } from '@/components/ui/text';
 import { cn } from '@/lib/utils';
 import { TYPE_NUMBER, TYPE_SECTION } from '@/styles/classes';
 
-export const NOT_FOUND_TITLE = 'Not found';
-
 type Props = {};
 
 // The web's 404; mobile has no home page, so Play is the way out
 const NotFoundView = ({}: Props) => {
   return (
-    <Screen title={NOT_FOUND_TITLE} canGoBack={router.canGoBack()}>
+    <Screen canGoBack={router.canGoBack()}>
       <View className="flex-row flex-wrap items-center gap-4">
         <Text
           maxFontSizeMultiplier={1.2}

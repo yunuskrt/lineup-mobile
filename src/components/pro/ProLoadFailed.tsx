@@ -8,7 +8,7 @@ type Props = { message: string; onRetry: () => void };
 // The split is unknown, so the page can't say Pro yet
 const ProLoadFailed = ({ message, onRetry }: Props) => {
   return (
-    <Screen title="Couldn’t load this page" canGoBack onBack={leavePro}>
+    <Screen canGoBack onBack={leavePro}>
       <RetryNotice message={message} onRetry={onRetry} />
     </Screen>
   );
