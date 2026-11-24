@@ -16,6 +16,12 @@ describe('headerCollapse', () => {
     expect(headerCollapse(400, 40)).toBe(1);
   });
 
+  it('fades the rule over the top gap on a screen with no title', () => {
+    expect(headerCollapse(0, 16)).toBe(0);
+    expect(headerCollapse(8, 16)).toBe(0.5);
+    expect(headerCollapse(16, 16)).toBe(1);
+  });
+
   it('jumps straight to 1 before the title is measured', () => {
     expect(headerCollapse(0, 0)).toBe(0);
     expect(headerCollapse(5, 0)).toBe(1);

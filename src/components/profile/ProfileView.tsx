@@ -74,7 +74,6 @@ const ProfileView = ({
   const canRefresh = view.status === 'ready' || view.status === 'error';
   return (
     <Screen
-      title="Profile"
       hasTabBar
       onRefresh={canRefresh ? onRefresh : undefined}
       isRefreshing={isRefreshing}

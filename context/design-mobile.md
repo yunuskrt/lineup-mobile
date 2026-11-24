@@ -102,7 +102,7 @@ Uppercase is for stickers and section labels only. If Turkish capitals (İ Ş Ğ
 ## 4. Native patterns
 
 - **Tab bar:** Play, Archive and Profile, in the sticker style. A cream bar with a 2pt ink rule on top, 56pt plus the bottom safe area. The active tab's icon sits in a lavender pill (2pt ink outline, small hard shadow), with an Inter 600 12 label in ink. Inactive tabs are an umber icon and label. The bar is hidden on the game, Welcome, Sign in and Pro.
-- **Screen headers:** a large left-aligned title (Title role) at the top of the scroll. Scrolled past, it collapses into a compact bar: cream, the title at 20, with a 2pt ink rule fading in under it. Back is a plain chevron in a 44pt target (the web ruled out the back-arrow tile).
+- **Screen headers:** no page title (user, 2026-11-24): the tab bar names the tabs, and each screen opens on its first section, 16pt under the top edge. Pushed screens, and Play past step 1, get a 44pt row with a plain chevron (the web ruled out the back-arrow tile); tab screens with nothing to go back to have no row. A 2pt ink rule fades in under the top edge once the column scrolls. **The auth screens alone keep a large left-aligned title** (Title role) that collapses into a compact bar when scrolled past: cream, the title at 20, the rule fading in under it.
 - **Bottom sheets replace popovers and selects:** the filter pickers, the archive filters and the club search. A sheet is the kit's `Sheet` (M04b), a `Modal` that slides up over `gate-scrim`, with an ink top edge and grabber, and drags down to dismiss; it rises above the keyboard. Inside, it's cream, with a title row over an ink rule, a search field when the list is long, and ruled rows with checkboxes. The native `@expo/ui` sheet was tried and dropped (user, 2026-11-21).
 - **Dialogs feel native and keep the sticker look.** A centred white card with a 2pt ink outline, the hard shadow and radius md, over `gate-scrim`. Long-title type, 14pt muted text. Buttons are full width and stacked, with the safe choice on top. Android's back button and a tap on the scrim cancel. It fades and scales in from 0.96 over 160ms (fade only under reduced motion).
 - **Press feedback:** a pressable's face sinks 4pt into its shadow, which disappears. That's 80ms down and 140ms back, with a light haptic on press-in. Under reduced motion the shadow just drops, with no shift, as on web. Disabled controls stay flat and don't buzz.
@@ -159,7 +159,7 @@ WELCOME (first launch, no tabs)      SIGN IN (pushed, no tabs)
 ```text
 PLAY · step 1 (tab)                  PLAY · step 3
 ┌──────────────────────────────┐     ┌──────────────────────────────┐
-│ Play                         │     │ Play                         │
+│                              │     │ ‹                            │
 │ (1 Mode)──(2 Filters)──(3)   │     │ (✓ Solo)─(✓ UCL, any)─(3)    │
 │──────────────────────────────│     │──────────────────────────────│
 │ ┌▣ Solo ──────────────────┐  │     │ MODE  Solo        [Edit]     │
@@ -225,7 +225,7 @@ SUMMARY (the board stays)            LOBBY · room waiting
 ```text
 PROFILE (tab)                        ARCHIVE (tab)
 ┌──────────────────────────────┐     ┌──────────────────────────────┐
-│ Profile                  (A) │     │ Archive                      │
+│ (A) ana_k                    │     │ 2,341 matches                │
 │ ┌ lavender hero ──────────┐  │     │ [ ⌕ Search a club or match ] │
 │ │  12      3       7      │  │     │ (Competition ▾) (Era ▾) (…)  │
 │ │  won    drew    lost    │  │     │ ┌──────────────────────────┐ │
@@ -242,7 +242,7 @@ PROFILE (tab)                        ARCHIVE (tab)
 
 - **Profile:** the guest strip (Create account) sits above the hero for guests. Sign out is a secondary button at the end of the column. 375: the stat row wraps to two lines.
 - **Archive:** filter chips open sheets. For Free with the split on, the rows show locked actions with See Pro, as `theme.md` § Pro lock says. 375: each row's actions move to one Play button with a "more" sheet.
-- **Pro** (pushed from any lock or Profile, no tabs): the header chevron, a tilted PRO sticker over the Title "Pro", then the Free vs Pro plan as a ruled table (Feature · Free · Pro), then one primary button pinned at the bottom. 375: the table's first column wraps to two lines.
+- **Pro** (pushed from any lock or Profile, no tabs): the header chevron, a tilted PRO sticker (no title) over the one-line pitch, then the Free vs Pro plan as a ruled table (Feature · Free · Pro), then one primary button pinned at the bottom. 375: the table's first column wraps to two lines.
 
 ## Open questions (the user decides)
 

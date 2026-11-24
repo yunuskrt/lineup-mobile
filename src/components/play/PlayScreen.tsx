@@ -143,7 +143,6 @@ const PlayScreen = ({}: Props) => {
 
   return (
     <Screen
-      title="Play"
       hasTabBar
       avoidsKeyboard
       canGoBack={goBack !== null}

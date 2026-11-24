@@ -55,3 +55,4 @@ Not Started
 - M20b Pro: /pro plan table, Get Pro, footer slot, not found when off.
 - M21 System States: update screen, store link, offline bar, rate limit.
 - M22 Room Links: native intent, join row filled, held in game, share link.
+- Fix Screen Titles: no page titles bar auth, top row only with Back.

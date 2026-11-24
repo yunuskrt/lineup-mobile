@@ -68,7 +68,6 @@ const ArchiveView = ({
 
   return (
     <Screen
-      title="Archive"
       hasTabBar
       onRefresh={canRefresh ? onRefresh : undefined}
       isRefreshing={isRefreshing}
