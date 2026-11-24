@@ -1,23 +1,17 @@
 import React from 'react';
-import { View } from 'react-native';
-import PlaceholderScreen from '@/components/shell/PlaceholderScreen';
-import { Skeleton } from '@/components/ui/skeleton';
-
-const ROW_COUNT = 12;
+import { useLocalSearchParams } from 'expo-router';
+import ArchiveScreen from '@/components/archive/ArchiveScreen';
+import { ArchiveStatePreview } from '@/components/dev/ArchiveStatePreview';
 
 type Props = {};
 
-// Placeholder rows give the list its shape, and something to scroll
-const ArchiveScreen = ({}: Props) => {
-  return (
-    <PlaceholderScreen title="Archive" builtIn="M20: the archive" hasTabBar>
-      <View className="gap-3">
-        {Array.from({ length: ROW_COUNT }, (_, index) => (
-          <Skeleton key={index} className="h-16 w-full" />
-        ))}
-      </View>
-    </PlaceholderScreen>
-  );
+const ArchiveRoute = ({}: Props) => {
+  const { state } = useLocalSearchParams<{ state?: string }>();
+  // ?state= previews a sample in development only
+  if (__DEV__ && state !== undefined) {
+    return <ArchiveStatePreview key={state} state={state} />;
+  }
+  return <ArchiveScreen />;
 };
 
-export default ArchiveScreen;
+export default ArchiveRoute;

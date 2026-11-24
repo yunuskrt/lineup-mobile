@@ -51,3 +51,4 @@ Not Started
 - M18b Drops & Resume: reducer test, drop dev states, keyboard on return.
 - M19a Profile Screen: record, stat grid, guest strip, sign out, refresh.
 - M19b History: rows, mode tags, Show more states, refresh from page one.
+- M20a Archive: search, filter chips, Era sheet, rows, locked, first-page.

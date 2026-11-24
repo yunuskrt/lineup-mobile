@@ -9,20 +9,22 @@ type Props = {
   more: HistoryMoreState;
   count: number;
   onShowMore: () => void;
+  // What is listed, plural
+  noun?: string;
 };
 
 // The paging footer; a pending Show more holds its place
-const HistoryMore = ({ more, count, onShowMore }: Props) => {
+const HistoryMore = ({ more, count, onShowMore, noun = 'games' }: Props) => {
   const isLoading = more === 'loading';
   const shownCount = useRef(count);
 
   // New rows land below the reader; a pull's shorter list says nothing
   useEffect(() => {
     if (count > shownCount.current) {
-      AccessibilityInfo.announceForAccessibility(`Showing ${count} games`);
+      AccessibilityInfo.announceForAccessibility(`Showing ${count} ${noun}`);
     }
     shownCount.current = count;
-  }, [count]);
+  }, [count, noun]);
 
   if (more === 'end') return null;
 
@@ -32,7 +34,7 @@ const HistoryMore = ({ more, count, onShowMore }: Props) => {
         <StateNotice
           tone="error"
           icon={TriangleAlert}
-          message="Couldn’t load more games."
+          message={`Couldn’t load more ${noun}.`}
           isCompact
         >
           <Button label="Try again" variant="secondary" onPress={onShowMore} />

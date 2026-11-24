@@ -4,7 +4,7 @@ import {
   QueryClient,
 } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { firstHistoryPage, refreshHistory } from '@/hooks/use-profile';
+import { refreshHistory } from '@/hooks/use-profile';
 import { sampleHistory } from '@/lib/dev/samples';
 import { HISTORY_QUERY_KEY } from '@/lib/query-keys';
 import type { HistoryPage } from '@/types/profile';
@@ -20,26 +20,6 @@ function pageOf(cursor: string | null): HistoryPage {
     nextCursor: index + 1 < 3 ? String(index + 1) : null,
   };
 }
-
-describe('firstHistoryPage', () => {
-  it('keeps page one and its param only', () => {
-    const data: HistoryData = {
-      pages: [pageOf(null), pageOf('1'), pageOf('2')],
-      pageParams: [null, '1', '2'],
-    };
-
-    expect(firstHistoryPage(data)).toEqual({
-      pages: [pageOf(null)],
-      pageParams: [null],
-    });
-  });
-
-  it('leaves a single page as it is', () => {
-    const data: HistoryData = { pages: [pageOf(null)], pageParams: [null] };
-
-    expect(firstHistoryPage(data)).toEqual(data);
-  });
-});
 
 describe('refreshHistory', () => {
   const queryKey = [...HISTORY_QUERY_KEY, 'user-1'];

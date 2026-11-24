@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { AccessibilityInfo, ScrollView } from 'react-native';
 import ClubChipImage from '@/components/play/filter-panel/ClubChipImage';
-import FilterRow from '@/components/play/filter-panel/FilterRow';
+import FilterTrigger from '@/components/play/filter-panel/FilterTrigger';
 import OptionRow from '@/components/play/filter-panel/OptionRow';
-import SheetTrigger from '@/components/play/filter-panel/SheetTrigger';
 import type { FilterPanelProps } from '@/components/play/FilterPanel';
 import { FILTER_NOTE } from '@/components/play/styles';
 import { Input } from '@/components/ui/input';
@@ -19,10 +18,10 @@ function countLabel(count: number): string {
   return `${count} ${pluralOf(count, 'club', 'clubs')} found`;
 }
 
-type Props = FilterPanelProps;
+type Props = FilterPanelProps & { isChip?: boolean };
 
 // Keyed by competition: a new pick clears it
-const ClubFilter = ({ options, filters, onChange }: Props) => {
+const ClubFilter = ({ options, filters, onChange, isChip = false }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const view = clubRowView(filters, options, query);
@@ -43,13 +42,14 @@ const ClubFilter = ({ options, filters, onChange }: Props) => {
   };
 
   return (
-    <FilterRow label="Club">
-      <SheetTrigger
-        name="Club"
-        value={selectValueLabel(filters.clubIds, clubOptions)}
-        count={filters.clubIds.length}
-        onPress={() => setIsOpen(true)}
-      />
+    <FilterTrigger
+      name="Club"
+      value={selectValueLabel(filters.clubIds, clubOptions)}
+      isActive={filters.clubIds.length > 0}
+      count={filters.clubIds.length}
+      isChip={isChip}
+      onPress={() => setIsOpen(true)}
+    >
       <Sheet isOpen={isOpen} onClose={close} title="Club" isTall>
         {view.hasSearch ? (
           <Input
@@ -99,7 +99,7 @@ const ClubFilter = ({ options, filters, onChange }: Props) => {
           ) : null}
         </ScrollView>
       </Sheet>
-    </FilterRow>
+    </FilterTrigger>
   );
 };
 
