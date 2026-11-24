@@ -54,3 +54,4 @@ Not Started
 - M20a Archive: search, filter chips, Era sheet, rows, locked, first-page.
 - M20b Pro: /pro plan table, Get Pro, footer slot, not found when off.
 - M21 System States: update screen, store link, offline bar, rate limit.
+- M22 Room Links: native intent, join row filled, held in game, share link.

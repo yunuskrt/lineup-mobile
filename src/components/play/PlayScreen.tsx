@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useEffectEvent, useState } from 'react';
 import { View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useIsFocused, useLocalSearchParams } from 'expo-router';
 import FiltersStep from '@/components/play/FiltersStep';
 import ModeStep from '@/components/play/ModeStep';
 import PlaySteps from '@/components/play/PlaySteps';
@@ -28,7 +28,8 @@ import {
   PRACTICE_OVER_RUN_COPY,
   withPractice,
 } from '@/lib/practice';
-import { joinCodeFrom } from '@/lib/room-code';
+import { takeHeldRoomCode } from '@/lib/pending-room';
+import { joinCodeFrom, withRoom } from '@/lib/room-code';
 import {
   paramsKey,
   routeParamsFor,
@@ -100,6 +101,16 @@ const PlayScreen = ({}: Props) => {
     if (sameParams(next, params)) return;
     router.setParams(routeParamsFor(next, routeParams));
   }
+
+  // A room link that came during a game waits for Play to show
+  const takeHeldCode = useEffectEvent(() => {
+    const code = takeHeldRoomCode();
+    if (code) write(withRoom(queryFor('mode', 'duel'), code));
+  });
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    if (isFocused) takeHeldCode();
+  }, [isFocused]);
 
   function goTo(nextStep: PlayStep) {
     if (nextStep === step) return;
