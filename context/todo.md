@@ -44,7 +44,7 @@ This todo file is for developer-side use.
 - [x] **Phase M16 — Socket Client**: Token handshake, protocol gate, takeover, reconnects, app background and foreground. (copy list E)
 - [x] **Phase M17 — Duel Lobby & Rooms**: Searching, pairing, filters, coin flip, no opponent; create, share, join and expired rooms. (copy list F)
 - [x] **Phase M18 — Duel Play & Result**: Alternating turns, their turn, drop and resume overlays, forfeit on back, result and replay actions.
-- [ ] **Phase M19 — Profile**: Record, stat tiles, paged history, pull to refresh, guest strip with upgrade, sign out, `?state=`.
+- [ ] 🟡 **Phase M19 — Profile**: Record, stat tiles, paged history, pull to refresh, guest strip with upgrade, sign out, `?state=`. — partially done: paged history (M19b)
 - [ ] **Phase M20 — Archive & Pro**: Archive search, filter sheet, fixture rows with Play and Practise, Pro locks, `/pro` table, `?state=`.
 - [ ] **Phase M21 — System States**: Update-required screen with store link, empty pool widen, rate limit, connection lost, offline notice.
 - [ ] **Phase M22 — Room Links**: `lineup://play/duel?room=<code>` opens the join with the code filled, cold start and warm.

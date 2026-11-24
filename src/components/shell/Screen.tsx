@@ -1,5 +1,5 @@
 import React, { type ReactNode, useEffect } from 'react';
-import { KeyboardAvoidingView, View } from 'react-native';
+import { KeyboardAvoidingView, RefreshControl, View } from 'react-native';
 import Animated, {
   useAnimatedRef,
   useAnimatedScrollHandler,
@@ -11,6 +11,7 @@ import BackButton from '@/components/shell/screen/BackButton';
 import { Text } from '@/components/ui/text';
 import { headerCollapse } from '@/lib/screen-header';
 import { TYPE_CARD_TITLE, TYPE_TITLE } from '@/styles/classes';
+import { ROLES } from '@/styles/tokens';
 
 const BOTTOM_GAP = 32;
 
@@ -29,6 +30,9 @@ type Props = {
   avoidsKeyboard?: boolean;
   // A change scrolls the column back to the top
   scrollResetKey?: string;
+  // Pull to refresh, with the spinner in ink
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 };
 
 // A ruled column under a large title that collapses into a bar
@@ -41,6 +45,8 @@ const Screen = ({
   hasTabBar = false,
   avoidsKeyboard = false,
   scrollResetKey,
+  onRefresh,
+  isRefreshing = false,
 }: Props) => {
   const insets = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
@@ -102,6 +108,17 @@ const Screen = ({
           onScroll={onScroll}
           scrollEventThrottle={16}
           keyboardShouldPersistTaps="handled"
+          refreshControl={
+            onRefresh ? (
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={onRefresh}
+                tintColor={ROLES.fg}
+                colors={[ROLES.fg]}
+                progressBackgroundColor={ROLES['surface-card']}
+              />
+            ) : undefined
+          }
           // The bottom inset is known only at run time
           contentContainerStyle={{ paddingBottom: bottom }}
         >
