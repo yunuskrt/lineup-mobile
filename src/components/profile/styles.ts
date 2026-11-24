@@ -35,3 +35,12 @@ export const STAT_TILE = 'min-w-0 flex-1 justify-center gap-1 p-4';
 export const STAT_LABEL = 'font-body-medium text-12 text-fg-muted uppercase';
 
 export const STAT_VALUE = cn(TYPE_NUMBER, 'text-28 leading-7');
+
+// One white list in ink, quiet rules between its rows
+export const HISTORY_LIST =
+  'overflow-hidden rounded-lg border-2 border-line bg-surface-card';
+
+// Two lines, as the web's phone row
+export const HISTORY_ROW = 'min-h-18 justify-center gap-1 px-3 py-3';
+
+export const HISTORY_LINE = 'flex-row items-center gap-3';

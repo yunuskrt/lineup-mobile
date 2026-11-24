@@ -10,6 +10,6 @@ export const ProfileStatePreview = ({ state }: ProfileStatePreviewProps) => {
   // Built once, so Today and Yesterday hold while it's open
   const [view] = useState(() => resolveProfileState(state).build(Date.now()));
 
-  // Snapshots have no server to retry or refresh
-  return <ProfileView view={view} onRetry={() => {}} />;
+  // Snapshots have no server to retry, page or refresh
+  return <ProfileView view={view} onRetry={() => {}} onShowMore={() => {}} />;
 };
