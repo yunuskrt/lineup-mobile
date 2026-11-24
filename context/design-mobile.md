@@ -157,27 +157,30 @@ WELCOME (first launch, no tabs)      SIGN IN (pushed, no tabs)
 - **Sign in:** the mint band is a full-width colour band, not a box; the guest upgrade reuses Create account. 375: the band scrolls under the keyboard, and the submit button stays in view.
 
 ```text
-PLAY · step 1 (tab)                  PLAY · step 3
+PLAY · step 1 (tab)                  PLAY · step 3 (a duel)
 ┌──────────────────────────────┐     ┌──────────────────────────────┐
 │                              │     │ ‹                            │
-│ (1 Mode)──(2 Filters)──(3)   │     │ (✓ Solo)─(✓ UCL, any)─(3)    │
+│ (1 Mode)──(2 Filters)──(3)   │     │ (✓ Duel)─(✓ UCL, any)─(3)    │
 │──────────────────────────────│     │──────────────────────────────│
-│ ┌▣ Solo ──────────────────┐  │     │ MODE  Solo        [Edit]     │
-│ │ Name the XI alone       │  │     │──────────────────────────────│
-│ └─────────────────────────┘  │     │ COMPETITION  UCL  [Edit]     │
-│ ┌▣ Duel ─── picked: lavender┐│     │ CLUB  Any · ERA  Any         │
-│ └─────────────────────────┘  │     │──────────────────────────────│
-│ ┌▣ Practice ─────── ⟋PRO⟋ ┐  │     │ 3 of 5 solo runs left today  │
+│ Choose a mode                │     │ Ready to play                │
+│ Have a room code?            │     │ MODE  Duel        [Edit]     │
+│ [K][7][Q][M][2][X]  [Join]   │     │──────────────────────────────│
+│ ┌▣ Solo ──────────────────┐  │     │ COMPETITION  UCL  [Edit]     │
+│ │ Name the XI alone       │  │     │ CLUB  Any · ERA  Any         │
 │ └─────────────────────────┘  │     │                              │
-│ Have a room code? [______]   │     │ [         Start          ]   │
-│ [          Next          ]   │     │ [      Create room       ]   │
+│ ┌▣ Duel ─── picked: lavender┐│     │                              │
+│ └─────────────────────────┘  │     │                              │
+│ ┌▣ Practice ─────── ⟋PRO⟋ ┐  │     │                              │
+│══════════════════════════════│     │══════════════════════════════│
+│ [     Next: filters      ]   │     │ [Back] [ Find an opponent ]  │
+│                              │     │ [      Create room       ]   │
 ├──────────────────────────────┤     ├──────────────────────────────┤
 │ ◉Play    ▦ Archive  ☺ Profile│     │ ◉Play    ▦ Archive  ☺ Profile│
 └──────────────────────────────┘     └──────────────────────────────┘
 ```
 
-- **Steps:** the indicator is three numbered pills; filled pills show a check and their choice. Back is a secondary button beside Next, or the header chevron. **Step 2** is ruled rows (Competition, Club, Era), each a select row with a count badge that opens a sheet. The join row appears only with Duel picked.
-- 375: mode tiles lose their one-line descriptions; Start and Create room sit side by side.
+- **Steps:** the indicator is three numbered pills; filled pills show a check and their choice. **Tapping a mode card moves to step 2**, the selected card too (a capped Solo stays to show its cap line); Next stays for coming back with a card kept. **The join row is always on step 1**, under the heading and above the cards. **Each step's buttons are pinned in a footer above the tab bar** (the double rule): Next; Back and Next; Back and Start, the cap line and a duel's Create room. While the keyboard is up on step 1 the footer steps aside, so Join stays in view. Back is the secondary button in the footer, or the header chevron. **Step 2** is ruled rows (Competition, Club, Era), each a select row with a count badge that opens a sheet.
+- 375: mode tiles lose their one-line descriptions; Join wraps under the code boxes; Start and Create room sit side by side in the footer, with Back as the chevron.
 
 ```text
 GAME · your turn, keyboard up        DUEL · their turn, keyboard down

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { TextInput, View } from 'react-native';
 import StartError from '@/components/play/StartError';
-import { STEP_SECTION } from '@/components/play/styles';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { useStartNavigation } from '@/hooks/use-start-navigation';
@@ -23,7 +22,7 @@ const CODE_SLOTS = Array.from(
 );
 
 type Props = {
-  // The params' filters, if any; the creator's apply
+  // The params' filters as a duel, if any; the creator's apply
   filterParams: URLSearchParams | null;
   initialCode: string;
 };
@@ -44,7 +43,7 @@ const JoinRoom = ({ filterParams, initialCode }: Props) => {
   }
 
   return (
-    <View className={STEP_SECTION}>
+    <View className="gap-3 pb-2">
       <Text accessibilityRole="header" className="font-body-semibold text-16">
         Have a room code?
       </Text>

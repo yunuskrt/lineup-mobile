@@ -73,8 +73,6 @@ const FiltersSample = ({ state }: FiltersSampleProps) => {
       onChange={setFilters}
       error={state === 'error' ? new Error('sample') : null}
       onRetry={() => {}}
-      onBack={() => {}}
-      onNext={() => {}}
       isHeadingFocused={false}
     />
   );
