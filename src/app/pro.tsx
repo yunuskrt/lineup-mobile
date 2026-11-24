@@ -1,10 +1,17 @@
 import React from 'react';
-import PlaceholderScreen from '@/components/shell/PlaceholderScreen';
+import { useLocalSearchParams } from 'expo-router';
+import { ProStatePreview } from '@/components/dev/ProStatePreview';
+import ProScreen from '@/components/pro/ProScreen';
 
 type Props = {};
 
-const ProScreen = ({}: Props) => {
-  return <PlaceholderScreen title="Pro" builtIn="M20: Pro" canGoBack />;
+const ProRoute = ({}: Props) => {
+  const { state } = useLocalSearchParams<{ state?: string }>();
+  // ?state= previews a sample in development only
+  if (__DEV__ && state !== undefined) {
+    return <ProStatePreview key={state} state={state} />;
+  }
+  return <ProScreen />;
 };
 
-export default ProScreen;
+export default ProRoute;

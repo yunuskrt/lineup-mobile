@@ -25,6 +25,8 @@ type Props = {
   isBusy?: boolean;
   // Required for an icon-only button
   accessibilityLabel?: string;
+  // Read after the label, as the web's aria-describedby
+  accessibilityHint?: string;
   isPressedPreview?: boolean;
 };
 
@@ -37,6 +39,7 @@ export const Button = ({
   isDisabled = false,
   isBusy = false,
   accessibilityLabel,
+  accessibilityHint,
   isPressedPreview,
 }: Props) => {
   const isInert = isDisabled || isBusy;
@@ -47,6 +50,7 @@ export const Button = ({
       isBusy={isBusy}
       isPressedPreview={isPressedPreview}
       accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityHint={accessibilityHint}
       className={cn(
         BUTTON_FACE,
         BUTTON_VARIANT[variant],

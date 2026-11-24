@@ -52,3 +52,4 @@ Not Started
 - M19a Profile Screen: record, stat grid, guest strip, sign out, refresh.
 - M19b History: rows, mode tags, Show more states, refresh from page one.
 - M20a Archive: search, filter chips, Era sheet, rows, locked, first-page.
+- M20b Pro: /pro plan table, Get Pro, footer slot, not found when off.
