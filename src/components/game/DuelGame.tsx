@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import ProtocolHold from '@/components/game/duel-game/ProtocolHold';
 import GameCanvas from '@/components/game/GameCanvas';
 import QuitDialog, { DUEL_FORFEIT_COPY } from '@/components/game/QuitDialog';
+import UpdateRequired from '@/components/game/UpdateRequired';
 import { useDuel } from '@/hooks/use-duel';
 import { useGameBack } from '@/hooks/use-game-back';
 import { usePlayerDirectory } from '@/hooks/use-player-directory';
@@ -156,7 +156,7 @@ const DuelGame = ({}: Props) => {
   useGameBack(handleQuit);
 
   if (state.phase === 'refused') {
-    return <ProtocolHold onBack={backToPlay} />;
+    return <UpdateRequired onBack={backToPlay} />;
   }
 
   return (

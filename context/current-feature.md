@@ -53,3 +53,4 @@ Not Started
 - M19b History: rows, mode tags, Show more states, refresh from page one.
 - M20a Archive: search, filter chips, Era sheet, rows, locked, first-page.
 - M20b Pro: /pro plan table, Get Pro, footer slot, not found when off.
+- M21 System States: update screen, store link, offline bar, rate limit.

@@ -30,6 +30,7 @@ import RunSummary from '@/components/game/RunSummary';
 import SidePickCard from '@/components/game/SidePickCard';
 import SoundToggle from '@/components/game/SoundToggle';
 import SquadGrid from '@/components/pitch/SquadGrid';
+import OfflineNotice from '@/components/shell/OfflineNotice';
 import QuitChip from '@/components/shell/QuitChip';
 import { Alert } from '@/components/ui/alert';
 import { IconTile } from '@/components/ui/icon-tile';
@@ -230,6 +231,8 @@ const GameCanvas = ({
           >
             <MatchHeader match={view.match} isCompact={isCompact} hasControls />
           </View>
+          {/* Only while loading: a paused start would otherwise say nothing */}
+          {view.match === null ? <OfflineNotice /> : null}
           <View className="flex-1">
             <View
               className={cn('bg-turf p-2', !hasEnded && 'flex-1')}

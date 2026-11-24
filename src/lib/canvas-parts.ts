@@ -1,5 +1,5 @@
 import type { CanvasView } from '@/types/canvas';
-import type { GateSize, LaterPart } from '@/types/canvas-gate';
+import type { GateSize } from '@/types/canvas-gate';
 import type { DuelLobbyStep } from '@/types/duel-lobby';
 
 // The web's LOBBY_GATE_SIZE: steps with a card or a form go wide
@@ -19,8 +19,4 @@ export function gateSize(view: CanvasView): GateSize {
     return LOBBY_GATE_SIZE[view.lobby.step];
   }
   return view.gate?.sidePick ? 'wide' : 'narrow';
-}
-
-export function laterPartLine({ phase, name }: LaterPart): string {
-  return `Built in ${phase}: the ${name}.`;
 }
